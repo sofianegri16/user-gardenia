@@ -6,6 +6,7 @@ import GardenCheckInForm from '@/components/garden/GardenCheckInForm';
 import { useGardenData } from '@/hooks/useGardenData';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Leaf } from 'lucide-react';
 
 const Garden = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -20,7 +21,7 @@ const Garden = () => {
   } = useGardenData();
 
   useEffect(() => {
-    // If no user and not loading, redirect to login
+    // Si no hay usuario y no está cargando, redirigir al login
     if (!user && !isAuthLoading) {
       navigate('/login');
     } else if (user) {
@@ -55,7 +56,10 @@ const Garden = () => {
   if (isAuthLoading || isDataLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-garden-primary">Cargando...</div>
+        <div className="animate-pulse text-garden-primary flex flex-col items-center">
+          <Leaf className="h-12 w-12 mb-4 animate-spin" />
+          <span>Cargando tu jardín emocional...</span>
+        </div>
       </div>
     );
   }
@@ -64,7 +68,7 @@ const Garden = () => {
   if (hasLoadError && user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-garden-light">
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 max-w-md">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Hubo un problema al cargar tus datos</h1>
           <p className="text-lg text-muted-foreground mb-6">
             No pudimos recuperar la información de tu jardín emocional. Por favor intenta de nuevo.
@@ -89,10 +93,10 @@ const Garden = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start p-4 bg-garden-light">
+    <div className="min-h-screen flex flex-col items-center justify-start p-4 sm:p-6 bg-gradient-to-b from-garden-light to-white">
       <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Mi Jardín Emocional</h1>
+          <h1 className="text-3xl font-bold mb-2 text-garden-primary">Mi Jardín Emocional</h1>
           <p className="text-lg text-muted-foreground">
             {todayCheckin 
               ? 'Interactúa con los elementos del jardín para ajustar tu estado emocional.' 
@@ -100,7 +104,7 @@ const Garden = () => {
           </p>
         </div>
         
-        {/* Check-in Form with integrated visualization */}
+        {/* Check-in Form con visualización integrada */}
         <GardenCheckInForm
           initialEnergy={todayCheckin?.energy ?? 5}
           initialMentalPressure={todayCheckin?.mental_pressure ?? 5}

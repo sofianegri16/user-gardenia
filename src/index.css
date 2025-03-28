@@ -140,11 +140,11 @@
 }
 
 @keyframes fly {
-  0% { transform: translateX(0) translateY(0); }
-  25% { transform: translateX(10px) translateY(-10px); }
-  50% { transform: translateX(20px) translateY(5px); }
-  75% { transform: translateX(5px) translateY(-5px); }
-  100% { transform: translateX(0) translateY(0); }
+  0% { transform: translateX(0) translateY(0) rotateX(0deg); }
+  25% { transform: translateX(10px) translateY(-10px) rotateX(-5deg); }
+  50% { transform: translateX(20px) translateY(5px) rotateX(5deg); }
+  75% { transform: translateX(5px) translateY(-5px) rotateX(-5deg); }
+  100% { transform: translateX(0) translateY(0) rotateX(0deg); }
 }
 
 @keyframes shake {
@@ -160,7 +160,7 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* New animations for interactive garden */
+/* Enhanced animations for 3D garden */
 @keyframes float {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-5px); }
@@ -175,12 +175,18 @@
 
 @keyframes sway {
   0% { transform: rotate(0deg) translateY(0); }
-  25% { transform: rotate(2deg) translateY(-5px); }
-  75% { transform: rotate(-2deg) translateY(5px); }
+  25% { transform: rotate(2deg) translateY(-2px); }
+  75% { transform: rotate(-2deg) translateY(2px); }
   100% { transform: rotate(0deg) translateY(0); }
 }
 
-/* Enhanced hover interactions */
+/* Enhance 3D depth */
+.garden-scene {
+  transform-style: preserve-3d;
+  perspective: 800px;
+}
+
+/* Interaction helpers */
 .interactive-element {
   @apply transition-all duration-300 cursor-pointer;
 }
@@ -192,7 +198,7 @@
 
 /* Tooltip styles */
 .garden-tooltip {
-  @apply absolute bg-black/60 text-white text-xs rounded px-2 py-1
+  @apply absolute bg-black/60 text-white text-xs rounded px-2 py-1 z-50
          opacity-0 transition-opacity duration-300 pointer-events-none
          backdrop-blur-sm;
 }
