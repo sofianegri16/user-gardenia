@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -117,4 +116,32 @@
   .garden-gradient {
     @apply bg-gradient-to-r from-garden-primary to-garden-secondary;
   }
+}
+
+/* Animaciones para el jardín emocional */
+@keyframes fall {
+  0% { transform: translateY(0); opacity: 0.8; }
+  80% { opacity: 0.5; }
+  100% { transform: translateY(100px); opacity: 0; }
+}
+
+@keyframes fly {
+  0% { transform: translateX(0) translateY(0); }
+  25% { transform: translateX(10px) translateY(-10px); }
+  50% { transform: translateX(20px) translateY(5px); }
+  75% { transform: translateX(5px) translateY(-5px); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+@keyframes shake {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(1deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(-1deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes scale-in {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
 }
