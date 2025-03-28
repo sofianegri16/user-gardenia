@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,16 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Garden theme colors
+				garden: {
+					primary: '#3B8A3E',     // Forest green
+					secondary: '#6BB36E',   // Leaf green
+					accent: '#FFD166',      // Sunny yellow
+					light: '#F0F7F0',       // Light mint
+					dark: '#2D5A2E',        // Deep forest
+					text: '#333333',        // Dark text
+					background: '#FBFEF9'   // Off-white background
 				}
 			},
 			borderRadius: {
@@ -84,11 +95,16 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'leaf-sway': {
+					'0%, 100%': { transform: 'rotate(-2deg)' },
+					'50%': { transform: 'rotate(2deg)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'leaf-sway': 'leaf-sway 3s ease-in-out infinite'
 			}
 		}
 	},
