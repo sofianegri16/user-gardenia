@@ -2,7 +2,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import GardenVisualization from '@/components/garden/GardenVisualization';
 import GardenCheckInForm from '@/components/garden/GardenCheckInForm';
 import { useGardenData } from '@/hooks/useGardenData';
 import { toast } from '@/hooks/use-toast';
@@ -96,24 +95,12 @@ const Garden = () => {
           <h1 className="text-3xl font-bold mb-2">Mi Jardín Emocional</h1>
           <p className="text-lg text-muted-foreground">
             {todayCheckin 
-              ? 'Este es tu jardín de hoy. Puedes actualizarlo si lo deseas.' 
+              ? 'Interactúa con los elementos del jardín para ajustar tu estado emocional.' 
               : 'Completa tu check-in emocional diario para cultivar tu jardín.'}
           </p>
         </div>
         
-        {/* Garden Visualization - only show if there's a check-in today */}
-        {todayCheckin && (
-          <GardenVisualization
-            energy={todayCheckin.energy}
-            mentalPressure={todayCheckin.mental_pressure}
-            personalConcerns={todayCheckin.personal_concerns}
-            achievements={todayCheckin.achievements}
-            exceptionalDay={todayCheckin.exceptional_day}
-            weather={todayCheckin.weather}
-          />
-        )}
-
-        {/* Check-in Form */}
+        {/* Check-in Form with integrated visualization */}
         <GardenCheckInForm
           initialEnergy={todayCheckin?.energy ?? 5}
           initialMentalPressure={todayCheckin?.mental_pressure ?? 5}
