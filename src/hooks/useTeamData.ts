@@ -29,8 +29,8 @@ export const useTeamData = () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
-      // Use the more generic approach to avoid type errors with the new view
-      const { data, error } = await supabase
+      // Use the type-unsafe version of the Supabase client to query the new view
+      const { data, error } = await (supabase as any)
         .from('team_emotional_data')
         .select('*')
         .gte('check_in_date', thirtyDaysAgo.toISOString().split('T')[0])
@@ -39,7 +39,7 @@ export const useTeamData = () => {
       if (error) throw error;
       
       // Type cast the data to match our expected type
-      setTeamData(data as unknown as TeamEmotionalData[]);
+      setTeamData(data as TeamEmotionalData[]);
     } catch (err: any) {
       console.error('Error fetching team data:', err);
       setError(err.message || 'Failed to load team data');

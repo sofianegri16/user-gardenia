@@ -17,9 +17,8 @@ export const useEmotionalRecognitions = () => {
     try {
       setIsLoading(true);
       
-      // Since emotional_recognitions is not in the Database type definition yet,
-      // we need to use the generic version of the from() method
-      const { data, error } = await supabase
+      // Use the type-unsafe version of the Supabase client to query the new table
+      const { data, error } = await (supabase as any)
         .from('emotional_recognitions')
         .select(`
           id,
@@ -37,8 +36,14 @@ export const useEmotionalRecognitions = () => {
       if (error) throw error;
       
       // Transform data to include sender name
-      const recognitionsWithNames = data.map(rec => ({
-        ...rec,
+      const recognitionsWithNames = data.map((rec: any) => ({
+        id: rec.id,
+        sender_id: rec.sender_id,
+        receiver_id: rec.receiver_id,
+        message: rec.message,
+        created_at: rec.created_at,
+        is_read: rec.is_read,
+        recognition_date: rec.recognition_date,
         sender_name: rec.sender?.name || 'Usuario'
       })) as EmotionalRecognition[];
       
@@ -60,15 +65,15 @@ export const useEmotionalRecognitions = () => {
     if (!user) return false;
     
     try {
-      // Using a more generic approach to avoid TypeScript errors with the new table
-      const { error } = await supabase
+      // Use the type-unsafe version of the Supabase client to insert into the new table
+      const { error } = await (supabase as any)
         .from('emotional_recognitions')
         .insert({
           sender_id: user.id,
           receiver_id: receiverId,
           message,
           recognition_date: new Date().toISOString().split('T')[0]
-        } as any); // Type assertion to bypass TypeScript check
+        });
       
       if (error) {
         if (error.code === '23505') { // Unique constraint violation
@@ -104,10 +109,10 @@ export const useEmotionalRecognitions = () => {
     if (!user) return false;
     
     try {
-      // Using a more generic approach to avoid TypeScript errors with the new table
-      const { error } = await supabase
+      // Use the type-unsafe version of the Supabase client to update the new table
+      const { error } = await (supabase as any)
         .from('emotional_recognitions')
-        .update({ is_read: true } as any)
+        .update({ is_read: true })
         .eq('id', recognitionId)
         .eq('receiver_id', user.id);
       
