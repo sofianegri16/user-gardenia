@@ -6,11 +6,11 @@ import GardenCheckInForm from '@/components/garden/GardenCheckInForm';
 import { useGardenData } from '@/hooks/useGardenData';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Leaf } from 'lucide-react';
+import { Leaf, LogOut } from 'lucide-react';
 import '@/garden.css'; // Importamos los nuevos estilos para el jardín
 
 const Garden = () => {
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const { 
     todayCheckin, 
@@ -54,6 +54,20 @@ const Garden = () => {
     }
   }, [hasLoadError, isDataLoading, isAuthLoading, weatherEmotions, navigate]);
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      toast({
+        title: "Error",
+        description: "Hubo un problema al cerrar sesión. Por favor intenta de nuevo.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isAuthLoading || isDataLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-garden-background">
@@ -95,6 +109,19 @@ const Garden = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start p-4 sm:p-6 bg-gradient-to-b from-garden-light to-white">
+      {/* Añadimos el botón de cerrar sesión en la esquina superior derecha */}
+      <div className="absolute top-4 right-4 z-10">
+        <Button 
+          onClick={handleSignOut} 
+          variant="outline" 
+          size="sm"
+          className="flex items-center gap-2 bg-white/70 backdrop-blur-sm hover:bg-white/90"
+        >
+          <LogOut size={16} />
+          <span>Cerrar sesión</span>
+        </Button>
+      </div>
+      
       <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2 text-garden-primary">Mi Jardín Emocional</h1>
