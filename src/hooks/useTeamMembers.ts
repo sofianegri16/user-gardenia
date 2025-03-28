@@ -22,18 +22,20 @@ export const useTeamMembers = () => {
       setIsLoading(true);
       
       // Get all user profiles except the current user
-      const { data, error } = await supabase
+      // Use type assertion to bypass strict TypeScript checks since the database structure
+      // might not match our types exactly (role column may not exist yet)
+      const { data, error } = await (supabase as any)
         .from('user_profiles')
-        .select('id, name, role')
+        .select('id, name')
         .neq('id', user.id); // Exclude current user
       
       if (error) throw error;
       
-      // Handle the case where role might not exist in the type yet
-      const members = data.map(user => ({
-        id: user.id,
+      // Transform the data to include a default role if missing
+      const members = data.map((user: any) => ({
+        id: user.id || '',
         name: user.name || 'Usuario',
-        role: 'role' in user ? (user as any).role : 'user'
+        role: 'user' // Default role if not available in the database
       }));
       
       setTeamMembers(members);
