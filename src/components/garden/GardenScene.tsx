@@ -1,4 +1,3 @@
-
 import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { WeatherType } from '@/types/garden';
@@ -160,12 +159,15 @@ const GardenScene: React.FC<GardenSceneProps> = ({
     
     // Animación del cielo basada en el clima
     if (skyRef.current) {
-      skyRef.current.material.color.lerp(skyColors[weather], 0.01);
+      const skyMaterial = skyRef.current.material as THREE.MeshBasicMaterial;
+      skyMaterial.color.lerp(skyColors[weather], 0.01);
     }
     
     // Animación del suelo basada en el clima
     if (sceneRef.current.children[0]) {
-      (sceneRef.current.children[0] as THREE.Mesh).material.color.lerp(groundColors[weather], 0.01);
+      const groundMesh = sceneRef.current.children[0] as THREE.Mesh;
+      const groundMat = groundMesh.material as THREE.MeshStandardMaterial;
+      groundMat.color.lerp(groundColors[weather], 0.01);
     }
     
     // Animación de las hojas según la presión mental
