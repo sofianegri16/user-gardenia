@@ -26,7 +26,7 @@ const Insects = forwardRef<THREE.Group, InsectsProps>(({ bugs }, ref) => {
             </mesh>
             
             {/* Alas */}
-            <mesh>
+            <mesh rotation={[0, Math.sin(bug.wingPhase) * 0.5, 0]}>
               <planeGeometry args={[0.2, 0.15]} />
               <meshStandardMaterial 
                 color={new THREE.Color().setHSL(Math.random(), 0.8, 0.5)} 
@@ -35,7 +35,7 @@ const Insects = forwardRef<THREE.Group, InsectsProps>(({ bugs }, ref) => {
                 opacity={0.9}
               />
             </mesh>
-            <mesh>
+            <mesh rotation={[0, Math.sin(bug.wingPhase) * -0.5, 0]}>
               <planeGeometry args={[0.2, 0.15]} />
               <meshStandardMaterial 
                 color={new THREE.Color().setHSL(Math.random(), 0.8, 0.5)} 
