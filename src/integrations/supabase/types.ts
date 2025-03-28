@@ -84,18 +84,21 @@ export type Database = {
           id: string
           name: string | null
           onboarding_complete: boolean | null
+          role: string | null
         }
         Insert: {
           created_at?: string
           id: string
           name?: string | null
           onboarding_complete?: boolean | null
+          role?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           name?: string | null
           onboarding_complete?: boolean | null
+          role?: string | null
         }
         Relationships: []
       }
@@ -125,6 +128,20 @@ export type Database = {
       }
     }
     Views: {
+      team_emotional_data: {
+        Row: {
+          avg_achievements: number | null
+          avg_energy: number | null
+          avg_exceptional_day: number | null
+          avg_mental_pressure: number | null
+          avg_personal_concerns: number | null
+          check_in_date: string | null
+          member_count: number | null
+          most_common_weather: string | null
+          role: string | null
+        }
+        Relationships: []
+      }
       user_emotional_data: {
         Row: {
           achievements: number | null
