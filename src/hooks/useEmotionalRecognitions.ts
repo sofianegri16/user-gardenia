@@ -72,7 +72,8 @@ export const useEmotionalRecognitions = () => {
           sender_id: user.id,
           receiver_id: receiverId,
           message,
-          recognition_date: new Date().toISOString().split('T')[0]
+          recognition_date: new Date().toISOString().split('T')[0],
+          is_read: false
         });
       
       if (error) {
