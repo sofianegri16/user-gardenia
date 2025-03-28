@@ -6,11 +6,14 @@ import GardenCheckInForm from '@/components/garden/GardenCheckInForm';
 import { useGardenData } from '@/hooks/useGardenData';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Leaf, LogOut } from 'lucide-react';
-import '@/garden.css'; // Importamos los nuevos estilos para el jardín
+import { Leaf, LogOut, BarChart3 } from 'lucide-react';
+import SendRecognitionForm from '@/components/recognition/SendRecognitionForm';
+import RecognitionsReceived from '@/components/recognition/RecognitionsReceived';
+import { useTeamData } from '@/hooks/useTeamData';
+import '@/garden.css';
 
 const Garden = () => {
-  const { user, isLoading: isAuthLoading, signOut } = useAuth();
+  const { user, profile, isLoading: isAuthLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const { 
     todayCheckin, 
@@ -20,6 +23,7 @@ const Garden = () => {
     hasLoadError,
     saveCheckin 
   } = useGardenData();
+  const { isLeader } = useTeamData();
 
   useEffect(() => {
     // Si no hay usuario y no está cargando, redirigir al login
@@ -109,8 +113,22 @@ const Garden = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start p-4 sm:p-6 bg-gradient-to-b from-garden-light to-white">
-      {/* Añadimos el botón de cerrar sesión en la esquina superior derecha */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Header with user controls */}
+      <div className="w-full max-w-4xl flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2">
+          {isLeader && (
+            <Button 
+              onClick={() => navigate('/leader')} 
+              variant="outline" 
+              size="sm"
+              className="flex items-center gap-2 bg-white/70 backdrop-blur-sm hover:bg-white/90"
+            >
+              <BarChart3 size={16} />
+              <span>Panel de líder</span>
+            </Button>
+          )}
+        </div>
+        
         <Button 
           onClick={handleSignOut} 
           variant="outline" 
@@ -130,6 +148,14 @@ const Garden = () => {
               ? 'Interactúa con los elementos del jardín para ajustar tu estado emocional.' 
               : 'Completa tu check-in emocional diario para cultivar tu jardín.'}
           </p>
+        </div>
+        
+        {/* Recognition actions */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6 w-full">
+          <RecognitionsReceived />
+          <div className="flex justify-center items-center">
+            <SendRecognitionForm />
+          </div>
         </div>
         
         {/* Check-in Form con visualización integrada */}

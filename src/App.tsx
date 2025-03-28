@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Onboarding from "./pages/Onboarding";
 import Garden from "./pages/Garden";
+import LeaderDashboard from "./pages/LeaderDashboard";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 
@@ -39,6 +40,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Garden />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/leader" 
+              element={
+                <ProtectedRoute>
+                  <LeaderDashboard />
                 </ProtectedRoute>
               } 
             />
