@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { askAI, prepareTeamStateForAI, AskAIResponse, AskAIError } from '@/lib/askAI';
+import { askGemini, prepareTeamStateForGemini, AskGeminiResponse, AskGeminiError } from '@/lib/askGemini';
 import { useTeamData } from '@/hooks/useTeamData';
 import { toast } from '@/hooks/use-toast';
 import { AlertCircle } from 'lucide-react';
@@ -69,10 +69,10 @@ const AIAssistant = () => {
     try {
       setIsLoading(true);
       // Prepare team state for AI from the most recent data
-      const teamState = prepareTeamStateForAI(teamData[0]);
+      const teamState = prepareTeamStateForGemini(teamData[0]);
       
-      // Call the askAI function
-      const response: AskAIResponse = await askAI({
+      // Call the askGemini function - replace askAI with askGemini
+      const response: AskGeminiResponse = await askGemini({
         user_role: "Líder",
         team_state: teamState,
         question: question.trim(),
