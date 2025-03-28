@@ -66,7 +66,10 @@ serve(async (req) => {
     if (!openAIApiKey) {
       console.error('OpenAI API key is not configured');
       return new Response(
-        JSON.stringify({ error: 'OpenAI API key is not configured' }),
+        JSON.stringify({ 
+          error: 'OpenAI API key is not configured',
+          errorType: 'configuration_error'
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -85,60 +88,94 @@ serve(async (req) => {
 
     const startTime = Date.now();
     
-    // Call OpenAI API
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: question }
-        ],
-        temperature: 0.7,
-        max_tokens: 200,
-      }),
-    });
+    try {
+      // Call OpenAI API
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini', // Using a more affordable model to avoid quota issues
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: question }
+          ],
+          temperature: 0.7,
+          max_tokens: 200,
+        }),
+      });
 
-    const responseTime = Date.now() - startTime;
-    console.log(`OpenAI response time: ${responseTime}ms`);
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenAI API error:', errorData);
+      const responseTime = Date.now() - startTime;
+      console.log(`OpenAI response time: ${responseTime}ms`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('OpenAI API error:', errorData);
+        
+        // Check for quota exceeded error
+        if (errorData.error && errorData.error.code === 'insufficient_quota') {
+          return new Response(
+            JSON.stringify({ 
+              error: 'El servicio de IA está temporalmente no disponible por límites de uso. Por favor, inténtalo más tarde.',
+              errorType: 'quota_exceeded'
+            }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        return new Response(
+          JSON.stringify({ 
+            error: 'Error al llamar a la API de OpenAI',
+            details: errorData,
+            errorType: 'openai_api_error'
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      const data = await response.json();
+      const answer = data.choices[0]?.message?.content;
+      
+      if (!answer) {
+        console.error('Invalid response from OpenAI:', data);
+        return new Response(
+          JSON.stringify({ 
+            error: 'Respuesta inválida de OpenAI',
+            errorType: 'invalid_response'
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      console.log('Response successfully generated');
+      
+      // Return the answer
       return new Response(
-        JSON.stringify({ error: 'Error calling OpenAI API', details: errorData }),
+        JSON.stringify({ answer }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (openAIError) {
+      console.error('Error calling OpenAI:', openAIError);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Error al comunicarse con el servicio de IA', 
+          details: openAIError.message,
+          errorType: 'api_call_error'
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
-    const data = await response.json();
-    const answer = data.choices[0]?.message?.content;
-    
-    if (!answer) {
-      console.error('Invalid response from OpenAI:', data);
-      return new Response(
-        JSON.stringify({ error: 'Invalid response from OpenAI' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    console.log('Response successfully generated');
-    
-    // Return the answer
-    return new Response(
-      JSON.stringify({ answer }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
     
   } catch (error) {
     console.error('Error in ask-ai function:', error);
     
     return new Response(
-      JSON.stringify({ error: error.message || 'An unexpected error occurred' }),
+      JSON.stringify({ 
+        error: error.message || 'Ha ocurrido un error inesperado',
+        errorType: 'unknown_error'
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { TeamEmotionalData } from '@/types/leader';
 
@@ -17,6 +16,11 @@ export interface AskAIResponse {
   answer: string;
 }
 
+export interface AskAIError {
+  message: string;
+  type: 'quota' | 'connection' | 'auth' | 'unknown';
+}
+
 /**
  * Calls the ask-ai Edge Function to get AI assistant responses
  * @param payload The data containing user role, team state, and question
@@ -31,18 +35,83 @@ export const askAI = async (payload: AskAIPayload): Promise<AskAIResponse> => {
 
     if (error) {
       console.error('Error calling ask-ai function:', error);
-      throw new Error(error.message || 'Error al comunicarse con el asistente virtual');
+      
+      // Handle specific connection errors
+      if (error.message?.includes('Failed to fetch') || error.message?.includes('Network Error')) {
+        throw {
+          message: 'No se pudo conectar al asistente. Verifica tu conexión a internet.',
+          type: 'connection'
+        } as AskAIError;
+      }
+      
+      // Generic error
+      throw {
+        message: error.message || 'Error al comunicarse con el asistente virtual',
+        type: 'unknown'
+      } as AskAIError;
     }
 
-    if (!data || !data.answer) {
+    if (!data) {
+      console.error('No data received from ask-ai function');
+      throw {
+        message: 'No se recibió respuesta del asistente virtual',
+        type: 'unknown'
+      } as AskAIError;
+    }
+    
+    // Handle specific error types from the edge function
+    if (data.error) {
+      console.error('Error returned from ask-ai function:', data);
+      
+      if (data.errorType === 'quota_exceeded') {
+        throw {
+          message: 'El servicio de IA está temporalmente no disponible. Por favor, intenta más tarde.',
+          type: 'quota'
+        } as AskAIError;
+      }
+      
+      if (data.errorType === 'configuration_error') {
+        throw {
+          message: 'Error de configuración en el servidor. Contacta al administrador.',
+          type: 'unknown'
+        } as AskAIError;
+      }
+      
+      if (data.errorType === 'openai_api_error') {
+        throw {
+          message: 'Error en el servicio de IA. Por favor, intenta más tarde.',
+          type: 'unknown'
+        } as AskAIError;
+      }
+      
+      throw {
+        message: data.error || 'Error desconocido del asistente virtual',
+        type: 'unknown'
+      } as AskAIError;
+    }
+
+    if (!data.answer) {
       console.error('Invalid response from ask-ai function:', data);
-      throw new Error('Respuesta inválida del asistente virtual');
+      throw {
+        message: 'Respuesta inválida del asistente virtual',
+        type: 'unknown'
+      } as AskAIError;
     }
 
     return { answer: data.answer };
   } catch (error) {
     console.error('Error in askAI function:', error);
-    throw error;
+    
+    // If the error is already formatted as AskAIError, rethrow it
+    if (error.type) {
+      throw error;
+    }
+    
+    // Otherwise format as unknown error
+    throw {
+      message: error.message || 'Error inesperado al comunicarse con el asistente virtual',
+      type: 'unknown'
+    } as AskAIError;
   }
 };
 
