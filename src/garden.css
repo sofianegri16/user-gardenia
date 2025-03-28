@@ -1,0 +1,129 @@
+
+/* Estilos específicos para el jardín emocional */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes sway {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(2deg); }
+  75% { transform: rotate(-2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes pulse-glow {
+  0% { filter: drop-shadow(0 0 2px rgba(255,255,255,0.2)); }
+  50% { filter: drop-shadow(0 0 4px rgba(255,255,255,0.5)); }
+  100% { filter: drop-shadow(0 0 2px rgba(255,255,255,0.2)); }
+}
+
+@keyframes fall {
+  0% { transform: translateY(-20px); opacity: 0.9; }
+  100% { transform: translateY(100px); opacity: 0; }
+}
+
+/* Contenedor de la escena 3D */
+.garden-scene {
+  transform-style: preserve-3d;
+  perspective: 800px;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+}
+
+.garden-scene:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.garden-canvas {
+  outline: none;
+  touch-action: none;
+}
+
+/* Tooltip para elementos interactivos */
+.interactive-element {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.interactive-element:hover {
+  filter: brightness(1.1);
+}
+
+.garden-tooltip {
+  position: absolute;
+  opacity: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.interactive-element:hover .garden-tooltip {
+  opacity: 1;
+}
+
+/* Estilos para efectos climáticos */
+.sunny-sky {
+  background: linear-gradient(to bottom, #87CEEB, #E0F7FA);
+}
+
+.cloudy-sky {
+  background: linear-gradient(to bottom, #B0C4DE, #CFD8DC);
+}
+
+.rainy-sky {
+  background: linear-gradient(to bottom, #4682B4, #78909C);
+}
+
+/* Animaciones para elementos del jardín */
+.tree-swaying {
+  animation: sway 4s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.leaf-floating {
+  animation: float 3s ease-in-out infinite;
+}
+
+.flower-growing {
+  animation: scale-in 0.5s ease-out;
+  transform-origin: bottom center;
+}
+
+.raindrop {
+  animation: fall 1.5s linear infinite;
+}
+
+.butterfly {
+  animation: float 5s ease-in-out infinite;
+}
+
+.bee {
+  animation: float 3s ease-in-out infinite;
+}
+
+.clouds {
+  animation: float 20s linear infinite;
+}
+
+/* Transiciones suaves entre estados */
+.garden-transition {
+  transition: all 1s ease-in-out;
+}
+
+.water-ripple {
+  animation: pulse 2s ease-in-out infinite;
+  transform-origin: center center;
+}

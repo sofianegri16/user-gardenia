@@ -116,6 +116,9 @@ const GardenCheckInForm = ({
               >
                 <Sun size={20} className="text-yellow-500" />
                 <span>Soleado</span>
+                {weatherEmotions['sunny']?.length > 0 && (
+                  <span className="text-xs opacity-70">({weatherEmotions['sunny'].join(', ')})</span>
+                )}
               </Button>
               <Button
                 onClick={() => handleUpdateWeather('cloudy')}
@@ -124,6 +127,9 @@ const GardenCheckInForm = ({
               >
                 <Cloud size={20} className="text-gray-500" />
                 <span>Nublado</span>
+                {weatherEmotions['cloudy']?.length > 0 && (
+                  <span className="text-xs opacity-70">({weatherEmotions['cloudy'].join(', ')})</span>
+                )}
               </Button>
               <Button
                 onClick={() => handleUpdateWeather('rainy')}
@@ -132,6 +138,9 @@ const GardenCheckInForm = ({
               >
                 <CloudRain size={20} className="text-blue-500" />
                 <span>Lluvioso</span>
+                {weatherEmotions['rainy']?.length > 0 && (
+                  <span className="text-xs opacity-70">({weatherEmotions['rainy'].join(', ')})</span>
+                )}
               </Button>
             </div>
           </div>

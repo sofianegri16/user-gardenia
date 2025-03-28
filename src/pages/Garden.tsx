@@ -7,6 +7,7 @@ import { useGardenData } from '@/hooks/useGardenData';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Leaf } from 'lucide-react';
+import '@/garden.css'; // Importamos los nuevos estilos para el jardín
 
 const Garden = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
