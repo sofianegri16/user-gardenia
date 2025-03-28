@@ -7,7 +7,7 @@ interface RootsProps {
   handlePointerOver: (element: string) => void;
   handlePointerOut: () => void;
   scale: [number, number, number];
-  personalConcerns: number; // Required prop that was missing
+  personalConcerns: number;
 }
 
 const Roots = forwardRef<THREE.Group, RootsProps>(({

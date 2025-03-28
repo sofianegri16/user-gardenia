@@ -8,7 +8,7 @@ interface WaterProps {
   handlePointerOver: (element: string) => void;
   handlePointerOut: () => void;
   scale: [number, number, number];
-  energy: number; // Required prop that was missing
+  energy: number;
 }
 
 const Water = forwardRef<THREE.Group, WaterProps>(({

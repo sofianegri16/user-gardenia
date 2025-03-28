@@ -57,7 +57,6 @@ const Tree: React.FC<TreeProps> = ({
         onClick={() => onElementClick('weather')}
         onPointerOver={() => handlePointerOver('weather')}
         onPointerOut={handlePointerOut}
-        // Removed the className prop as it's not supported in Three.js group element
       >
         {/* Tronco del árbol mejorado */}
         <mesh 

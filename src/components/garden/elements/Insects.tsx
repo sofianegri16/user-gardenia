@@ -5,7 +5,7 @@ import * as THREE from 'three';
 interface InsectsProps {
   bugs: Array<{
     position: [number, number, number];
-    type: string;
+    type: 'butterfly' | 'bee';
     speed: number;
     radius: number;
     phase: number;
@@ -16,67 +16,71 @@ interface InsectsProps {
 const Insects = forwardRef<THREE.Group, InsectsProps>(({ bugs }, ref) => {
   return (
     <group ref={ref}>
-      {bugs.map((bug, i) => {
-        if (bug.type === 'butterfly') {
-          return (
-            <group key={`butterfly-${i}`} position={bug.position}>
-              <mesh position={[0, 0, 0]}>
-                <cylinderGeometry args={[0.02, 0.02, 0.2, 8]} />
-                <meshStandardMaterial color="#000000" />
-              </mesh>
-              
-              {/* Alas */}
-              <group position={[0, 0, 0]}>
-                <mesh position={[0.1, 0, 0]} rotation={[0, 0, 0]}>
-                  <planeGeometry args={[0.2, 0.15]} />
-                  <meshStandardMaterial
-                    color="#FF69B4"
-                    side={THREE.DoubleSide}
-                    transparent
-                    opacity={0.8}
-                  />
-                </mesh>
-              </group>
-              
-              <group position={[0, 0, 0]}>
-                <mesh position={[-0.1, 0, 0]} rotation={[0, 0, 0]}>
-                  <planeGeometry args={[0.2, 0.15]} />
-                  <meshStandardMaterial
-                    color="#FF69B4"
-                    side={THREE.DoubleSide}
-                    transparent
-                    opacity={0.8}
-                  />
-                </mesh>
-              </group>
-            </group>
-          );
-        } else {
-          return (
-            <group key={`bee-${i}`} position={bug.position}>
-              <mesh position={[0, 0, 0]}>
-                <capsuleGeometry args={[0.05, 0.1, 8, 8]} />
-                <meshStandardMaterial color="#FFD700" />
-              </mesh>
-              <mesh position={[0, 0, 0]}>
-                <capsuleGeometry args={[0.05, 0.1, 8, 8]} />
-                <meshStandardMaterial color="#000000" wireframe />
-              </mesh>
-              
-              {/* Alas */}
-              <mesh position={[0, 0.05, 0]} rotation={[Math.PI / 2, 0, 0]}>
-                <planeGeometry args={[0.15, 0.1]} />
-                <meshStandardMaterial
-                  color="#FFFFFF"
-                  side={THREE.DoubleSide}
-                  transparent
-                  opacity={0.5}
-                />
-              </mesh>
-            </group>
-          );
-        }
-      })}
+      {bugs.map((bug, i) => (
+        bug.type === 'butterfly' ? (
+          <group key={`butterfly-${i}`} position={bug.position}>
+            {/* Cuerpo de la mariposa */}
+            <mesh>
+              <capsuleGeometry args={[0.02, 0.1, 8, 4]} />
+              <meshStandardMaterial color="#333333" />
+            </mesh>
+            
+            {/* Alas */}
+            <mesh>
+              <planeGeometry args={[0.2, 0.15]} />
+              <meshStandardMaterial 
+                color={new THREE.Color().setHSL(Math.random(), 0.8, 0.5)} 
+                side={THREE.DoubleSide}
+                transparent
+                opacity={0.9}
+              />
+            </mesh>
+            <mesh>
+              <planeGeometry args={[0.2, 0.15]} />
+              <meshStandardMaterial 
+                color={new THREE.Color().setHSL(Math.random(), 0.8, 0.5)} 
+                side={THREE.DoubleSide}
+                transparent
+                opacity={0.9}
+              />
+            </mesh>
+          </group>
+        ) : (
+          <group key={`bee-${i}`} position={bug.position}>
+            {/* Cuerpo de la abeja */}
+            <mesh>
+              <capsuleGeometry args={[0.03, 0.08, 8, 4]} />
+              <meshStandardMaterial color="#333333" />
+            </mesh>
+            
+            {/* Rayas */}
+            <mesh position={[0, 0, 0.015]}>
+              <planeGeometry args={[0.06, 0.08]} />
+              <meshStandardMaterial color="#FFD700" side={THREE.DoubleSide} />
+            </mesh>
+            
+            {/* Alas */}
+            <mesh position={[0, 0.02, 0]} rotation={[0, 0, Math.PI / 4]}>
+              <planeGeometry args={[0.1, 0.07]} />
+              <meshStandardMaterial 
+                color="#FFFFFF" 
+                transparent 
+                opacity={0.7}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+            <mesh position={[0, 0.02, 0]} rotation={[0, 0, -Math.PI / 4]}>
+              <planeGeometry args={[0.1, 0.07]} />
+              <meshStandardMaterial 
+                color="#FFFFFF" 
+                transparent 
+                opacity={0.7}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+          </group>
+        )
+      ))}
     </group>
   );
 });
