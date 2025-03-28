@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,6 +25,8 @@ interface GardenCheckin {
   exceptional_day: number;
   weather: WeatherType;
   created_at: string;
+  teragesto_accepted?: boolean | null;
+  teragesto_shown?: string | null;
 }
 
 const weatherLabels: Record<WeatherType, { icon: React.ReactNode, label: string }> = {
@@ -76,7 +77,13 @@ const Garden = () => {
       if (error) throw error;
       
       if (data) {
-        setTodayCheckin(data);
+        // Cast the weather property to ensure it's a valid WeatherType
+        const checkinData: GardenCheckin = {
+          ...data,
+          weather: data.weather as WeatherType
+        };
+        
+        setTodayCheckin(checkinData);
         // Update form with existing data
         setEnergy(data.energy);
         setMentalPressure(data.mental_pressure);
@@ -174,7 +181,12 @@ const Garden = () => {
       
       // Update the local state with the new check-in
       if (response.data && response.data.length > 0) {
-        setTodayCheckin(response.data[0]);
+        // Ensure we cast weather to WeatherType
+        const checkinData: GardenCheckin = {
+          ...response.data[0],
+          weather: response.data[0].weather as WeatherType
+        };
+        setTodayCheckin(checkinData);
       }
       
     } catch (error: any) {
