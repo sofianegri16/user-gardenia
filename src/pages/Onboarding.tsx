@@ -13,13 +13,51 @@ const Onboarding = () => {
   const { user, isLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+  const [checkingEmotions, setCheckingEmotions] = useState(true);
   
   useEffect(() => {
     // If no user and not loading, redirect to login
     if (!user && !isLoading) {
       navigate('/login');
+    } else if (user && !isLoading) {
+      console.log("🌿 user loaded in Onboarding:", user.id);
+      checkExistingEmotions();
     }
   }, [user, isLoading, navigate]);
+
+  // Check if user already has weather emotions configured
+  const checkExistingEmotions = async () => {
+    if (!user) return;
+    
+    try {
+      setCheckingEmotions(true);
+      
+      const { data, error } = await supabase
+        .from('weather_emotions')
+        .select('weather')
+        .eq('user_id', user.id)
+        .limit(1);
+        
+      if (error) throw error;
+      
+      console.log("🌿 checking existing emotions:", data);
+      
+      // If user already has emotions, redirect to garden
+      if (data && data.length > 0) {
+        console.log("🌿 user has existing emotions, redirecting to garden");
+        navigate('/garden');
+      }
+    } catch (error) {
+      console.error('Error checking weather emotions:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron verificar tus emociones guardadas. Por favor intenta de nuevo.",
+        variant: "destructive"
+      });
+    } finally {
+      setCheckingEmotions(false);
+    }
+  };
 
   // Save user's weather emotion selections to Supabase
   const handleEmotionComplete = async (selections: Record<WeatherType, Emotion[]>) => {
@@ -71,10 +109,10 @@ const Onboarding = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || checkingEmotions) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-garden-primary">Loading...</div>
+        <div className="animate-pulse text-garden-primary">Cargando...</div>
       </div>
     );
   }

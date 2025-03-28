@@ -11,9 +11,11 @@ export const useGardenData = () => {
   const [weatherEmotions, setWeatherEmotions] = useState<WeatherEmotions>({ sunny: [], cloudy: [], rainy: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadError, setHasLoadError] = useState(false);
 
   useEffect(() => {
     if (user) {
+      console.log("🌿 user loaded in useGardenData:", user.id);
       loadTodayCheckin();
       loadWeatherEmotions();
     }
@@ -45,6 +47,7 @@ export const useGardenData = () => {
       }
     } catch (error) {
       console.error('Error loading today\'s check-in:', error);
+      setHasLoadError(true);
       toast({
         title: 'Error',
         description: 'No se pudo cargar el check-in de hoy. Intenta de nuevo más tarde.',
@@ -66,17 +69,31 @@ export const useGardenData = () => {
       
       if (error) throw error;
       
+      console.log("🌿 weatherEmotions loaded:", data);
+      
       const emotions: WeatherEmotions = { sunny: [], cloudy: [], rainy: [] };
       
-      data.forEach(item => {
-        if (['sunny', 'cloudy', 'rainy'].includes(item.weather)) {
-          emotions[item.weather as WeatherType].push(item.emotion);
-        }
-      });
-      
-      setWeatherEmotions(emotions);
+      if (data && data.length > 0) {
+        data.forEach(item => {
+          if (['sunny', 'cloudy', 'rainy'].includes(item.weather)) {
+            emotions[item.weather as WeatherType].push(item.emotion);
+          }
+        });
+        
+        setWeatherEmotions(emotions);
+      } else {
+        // Si no hay emociones guardadas para el usuario, se considera un error de datos
+        console.log("⚠️ No weather emotions found for user:", user.id);
+        setHasLoadError(true);
+      }
     } catch (error) {
       console.error('Error loading weather emotions:', error);
+      setHasLoadError(true);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron cargar tus emociones asociadas con el clima.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -160,6 +177,7 @@ export const useGardenData = () => {
     weatherEmotions,
     isSubmitting,
     isLoading,
+    hasLoadError,
     saveCheckin
   };
 };

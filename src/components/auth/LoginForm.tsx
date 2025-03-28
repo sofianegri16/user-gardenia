@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Leaf } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -22,10 +23,23 @@ const LoginForm = () => {
     setIsSubmitting(true);
 
     try {
+      console.log("🌿 attempting login for:", email);
       await signIn(email, password);
+      
+      // Inicialmente navegamos al onboarding
+      // El componente onboarding verificará si ya tiene emociones configuradas
+      // y redirigirá al usuario al jardín si es necesario
       navigate('/onboarding');
+      
     } catch (err: any) {
+      console.error("Login error:", err);
       setError(err.message || 'Failed to sign in. Please check your credentials.');
+      
+      toast({
+        title: 'Error de inicio de sesión',
+        description: err.message || 'Hubo un problema al iniciar sesión. Verifica tus credenciales.',
+        variant: 'destructive',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -87,7 +101,7 @@ const LoginForm = () => {
             disabled={isSubmitting}
             className="w-full btn-garden-primary"
           >
-            {isSubmitting ? "Signing in..." : "Sign In"}
+            {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
           </Button>
         </form>
       </CardContent>
