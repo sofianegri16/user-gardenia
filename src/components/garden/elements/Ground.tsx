@@ -10,7 +10,7 @@ interface GroundProps {
 
 const Ground: React.FC<GroundProps> = ({ weather, groundColors }) => {
   // Geometrías y materiales reutilizables
-  const groundGeometry = new THREE.PlaneGeometry(20, 20);
+  const groundGeometry = new THREE.PlaneGeometry(25, 25);
   const groundMaterial = new THREE.MeshStandardMaterial({
     color: groundColors[weather],
     roughness: 0.8,
@@ -24,22 +24,30 @@ const Ground: React.FC<GroundProps> = ({ weather, groundColors }) => {
       geometry={groundGeometry}
       material={groundMaterial}
     >
-      {/* Texturas de césped */}
+      {/* Textura de césped mejorada - más denso y realista */}
       <group>
-        {Array.from({ length: 200 }).map((_, i) => (
+        {Array.from({ length: 500 }).map((_, i) => (
           <mesh 
             key={`grass-${i}`} 
             position={[
-              Math.random() * 16 - 8,
+              Math.random() * 20 - 10,
               0.05,
-              Math.random() * 16 - 8
+              Math.random() * 20 - 10
             ]}
             rotation={[0, Math.random() * Math.PI * 2, 0]}
           >
-            <planeGeometry args={[0.05, 0.2]} />
+            <planeGeometry args={[0.08, 0.25 + Math.random() * 0.15]} />
             <meshStandardMaterial 
-              color={weather === 'sunny' ? '#7CFC00' : weather === 'cloudy' ? '#669966' : '#3A5F0B'} 
+              color={
+                weather === 'sunny' 
+                  ? new THREE.Color('#7CFC00').lerp(new THREE.Color('#A0FF70'), Math.random() * 0.5) 
+                  : weather === 'cloudy' 
+                    ? new THREE.Color('#669966').lerp(new THREE.Color('#8FB98F'), Math.random() * 0.3) 
+                    : new THREE.Color('#3A5F0B').lerp(new THREE.Color('#5A8F2B'), Math.random() * 0.3)
+              } 
               side={THREE.DoubleSide}
+              transparent={true}
+              opacity={0.95}
             />
           </mesh>
         ))}

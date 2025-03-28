@@ -12,8 +12,14 @@ interface SkyProps {
 const Sky: React.FC<SkyProps> = ({ weather, skyColors, skyRef }) => {
   return (
     <mesh ref={skyRef} position={[0, 10, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[50, 50]} />
-      <meshBasicMaterial color={skyColors[weather]} side={THREE.BackSide} />
+      <planeGeometry args={[80, 80]} /> {/* Increased size for better coverage */}
+      <meshBasicMaterial 
+        color={skyColors[weather]} 
+        side={THREE.BackSide} 
+        fog={true}
+        opacity={weather === 'sunny' ? 0.9 : weather === 'cloudy' ? 0.85 : 0.8}
+        transparent={true}
+      />
     </mesh>
   );
 };
