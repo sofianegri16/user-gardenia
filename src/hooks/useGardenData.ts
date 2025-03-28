@@ -93,9 +93,16 @@ export const useGardenData = () => {
     try {
       setIsSubmitting(true);
       
+      // Map camelCase properties to snake_case for the database
       const dataToSave = {
         user_id: user.id,
-        ...checkInData
+        energy: checkInData.energy,
+        mental_pressure: checkInData.mentalPressure,
+        personal_concerns: checkInData.personalConcerns,
+        achievements: checkInData.achievements,
+        exceptional_day: checkInData.exceptionalDay,
+        weather: checkInData.weather,
+        check_in_date: new Date().toISOString().split('T')[0]
       };
       
       let response;
