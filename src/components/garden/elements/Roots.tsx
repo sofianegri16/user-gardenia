@@ -7,7 +7,7 @@ interface RootsProps {
   handlePointerOver: (element: string) => void;
   handlePointerOut: () => void;
   scale: [number, number, number];
-  personalConcerns: number; // Añadido para visualizar el nivel de preocupación
+  personalConcerns: number; // Required prop that was missing
 }
 
 const Roots = forwardRef<THREE.Group, RootsProps>(({

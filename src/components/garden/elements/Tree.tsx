@@ -1,7 +1,7 @@
 
 import React, { useRef } from 'react';
 import * as THREE from 'three';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { WeatherType } from '@/types/garden';
 
 interface TreeProps {
   position?: [number, number, number];
@@ -57,7 +57,7 @@ const Tree: React.FC<TreeProps> = ({
         onClick={() => onElementClick('weather')}
         onPointerOver={() => handlePointerOver('weather')}
         onPointerOut={handlePointerOut}
-        className="interactive-element"
+        // Removed the className prop as it's not supported in Three.js group element
       >
         {/* Tronco del árbol mejorado */}
         <mesh 

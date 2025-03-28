@@ -266,6 +266,7 @@ const GardenScene: React.FC<GardenSceneProps> = ({
         handlePointerOut={handlePointerOut}
         scale={[1, 1, 1]} // Se actualiza dinámicamente en useFrame
         ref={rootsRef}
+        personalConcerns={personalConcerns} // Added the missing required prop
       />
       
       {/* Agua (energía) */}
@@ -276,6 +277,7 @@ const GardenScene: React.FC<GardenSceneProps> = ({
         handlePointerOut={handlePointerOut}
         scale={[1, 1, 1]} // Se actualiza dinámicamente en useFrame
         ref={waterRef}
+        energy={energy} // Added the missing required prop
       />
       
       {/* Flores (logros) */}
