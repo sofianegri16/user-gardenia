@@ -21,6 +21,7 @@ export const useTeamMembers = () => {
     try {
       setIsLoading(true);
       
+      // Get all user profiles except the current user
       const { data, error } = await supabase
         .from('user_profiles')
         .select('id, name, role')
@@ -28,7 +29,14 @@ export const useTeamMembers = () => {
       
       if (error) throw error;
       
-      setTeamMembers(data as TeamMember[]);
+      // Handle the case where role might not exist in the type yet
+      const members = data.map(user => ({
+        id: user.id,
+        name: user.name || 'Usuario',
+        role: 'role' in user ? (user as any).role : 'user'
+      }));
+      
+      setTeamMembers(members);
     } catch (error: any) {
       console.error('Error fetching team members:', error);
       toast({

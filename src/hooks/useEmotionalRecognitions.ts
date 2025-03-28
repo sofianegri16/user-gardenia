@@ -17,12 +17,19 @@ export const useEmotionalRecognitions = () => {
     try {
       setIsLoading(true);
       
-      // Fetch recognitions received by the user
+      // Since emotional_recognitions is not in the Database type definition yet,
+      // we need to use the generic version of the from() method
       const { data, error } = await supabase
         .from('emotional_recognitions')
         .select(`
-          *,
-          sender:sender_id(id, name)
+          id,
+          sender_id,
+          receiver_id,
+          message,
+          created_at,
+          is_read,
+          recognition_date,
+          sender:user_profiles!sender_id(id, name)
         `)
         .eq('receiver_id', user.id)
         .order('created_at', { ascending: false });
@@ -33,7 +40,7 @@ export const useEmotionalRecognitions = () => {
       const recognitionsWithNames = data.map(rec => ({
         ...rec,
         sender_name: rec.sender?.name || 'Usuario'
-      }));
+      })) as EmotionalRecognition[];
       
       setReceivedRecognitions(recognitionsWithNames);
       setUnreadCount(recognitionsWithNames.filter(r => !r.is_read).length);
@@ -53,6 +60,7 @@ export const useEmotionalRecognitions = () => {
     if (!user) return false;
     
     try {
+      // Using a more generic approach to avoid TypeScript errors with the new table
       const { error } = await supabase
         .from('emotional_recognitions')
         .insert({
@@ -60,7 +68,7 @@ export const useEmotionalRecognitions = () => {
           receiver_id: receiverId,
           message,
           recognition_date: new Date().toISOString().split('T')[0]
-        });
+        } as any); // Type assertion to bypass TypeScript check
       
       if (error) {
         if (error.code === '23505') { // Unique constraint violation
@@ -96,9 +104,10 @@ export const useEmotionalRecognitions = () => {
     if (!user) return false;
     
     try {
+      // Using a more generic approach to avoid TypeScript errors with the new table
       const { error } = await supabase
         .from('emotional_recognitions')
-        .update({ is_read: true })
+        .update({ is_read: true } as any)
         .eq('id', recognitionId)
         .eq('receiver_id', user.id);
       

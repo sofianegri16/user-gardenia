@@ -11,7 +11,9 @@ export const useTeamData = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const isLeader = profile?.role === 'leader' || profile?.role === 'admin';
+  // Safely check the role property which might not be in the type yet
+  const roleValue = profile && 'role' in profile ? (profile as any).role : null;
+  const isLeader = roleValue === 'leader' || roleValue === 'admin';
   
   const fetchTeamData = async () => {
     if (!user || !isLeader) {
@@ -27,6 +29,7 @@ export const useTeamData = () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
+      // Use the more generic approach to avoid type errors with the new view
       const { data, error } = await supabase
         .from('team_emotional_data')
         .select('*')
@@ -35,7 +38,8 @@ export const useTeamData = () => {
       
       if (error) throw error;
       
-      setTeamData(data as TeamEmotionalData[]);
+      // Type cast the data to match our expected type
+      setTeamData(data as unknown as TeamEmotionalData[]);
     } catch (err: any) {
       console.error('Error fetching team data:', err);
       setError(err.message || 'Failed to load team data');
