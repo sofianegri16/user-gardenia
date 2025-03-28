@@ -10,6 +10,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Onboarding from "./pages/Onboarding";
+import Garden from "./pages/Garden";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 
@@ -30,6 +31,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Onboarding />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/garden" 
+              element={
+                <ProtectedRoute>
+                  <Garden />
                 </ProtectedRoute>
               } 
             />
