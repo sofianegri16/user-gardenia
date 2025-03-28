@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut, ChevronLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import TeamDashboard from '@/components/leader/TeamDashboard';
+import AIAssistant from '@/components/leader/AIAssistant';
 import { useTeamData } from '@/hooks/useTeamData';
 
 const LeaderDashboard = () => {
@@ -97,8 +98,13 @@ const LeaderDashboard = () => {
           </p>
         </div>
         
-        <div className="grid gap-6">
-          <TeamDashboard />
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <TeamDashboard />
+          </div>
+          <div className="lg:col-span-1">
+            <AIAssistant />
+          </div>
         </div>
       </div>
     </div>
