@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
@@ -7,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { 
   Droplet, Wind, Flower, Apple, Leaf, 
-  Sun, Cloud, CloudRain, X, TreeDeciduous, TreePine, Butterfly
+  Sun, Cloud, CloudRain, X, TreeDeciduous, TreePine, Bird
 } from 'lucide-react';
 import { WeatherType } from '@/types/garden';
 import { cn } from '@/lib/utils';
@@ -43,18 +42,15 @@ const GardenVisualization = ({
 }: GardenVisualizationProps) => {
   const gardenRef = useRef<HTMLDivElement>(null);
   
-  // Estados para animaciones y interacción
   const [isAnimating, setIsAnimating] = useState(false);
   const [activeInteraction, setActiveInteraction] = useState<InteractionType>(null);
   
-  // Inicia animación cuando se monta el componente o cambian los datos
   useEffect(() => {
     setIsAnimating(true);
     const timer = setTimeout(() => setIsAnimating(false), 2000);
     return () => clearTimeout(timer);
   }, [energy, mentalPressure, personalConcerns, achievements, exceptionalDay, weather]);
 
-  // Calculamos parámetros visuales basados en los datos emocionales
   const treeHeight = Math.max(45, Math.min(90, (energy + achievements) * 4));
   const rootsWidth = Math.max(30, Math.min(100, personalConcerns * 8));
   const fruitsCount = exceptionalDay === 1 ? 5 : 0;
@@ -62,7 +58,6 @@ const GardenVisualization = ({
   const windIntensity = mentalPressure;
   const waterLevel = Math.max(8, energy * 3);
 
-  // Manejadores de interacción
   const handleElementClick = (type: InteractionType) => {
     setActiveInteraction(type);
   };
@@ -83,9 +78,7 @@ const GardenVisualization = ({
 
   return (
     <div className="relative w-full h-[600px] overflow-hidden rounded-2xl shadow-xl">
-      {/* Escena principal - Jardín isométrico 3D */}
       <div className="absolute inset-0 garden-scene perspective-1000 bg-gradient-to-b from-green-50 to-green-100">
-        {/* Cielo según el clima */}
         <div 
           className={cn(
             "w-full h-32 transition-colors duration-1000 relative overflow-hidden",
@@ -95,12 +88,10 @@ const GardenVisualization = ({
           )}
           onClick={() => handleElementClick('weather')}
         >
-          {/* Tooltip para interacción */}
           <div className="garden-tooltip">
             Cambiar clima y estado emocional
           </div>
           
-          {/* Elementos del cielo según el clima */}
           {weather === 'sunny' && (
             <div className="absolute top-6 right-10 text-yellow-300 animate-[pulse_3s_ease-in-out_infinite]">
               <Sun size={48} className="drop-shadow-lg" />
@@ -146,9 +137,7 @@ const GardenVisualization = ({
           )}
         </div>
 
-        {/* Escena isométrica del jardín */}
         <div className="relative w-full h-[568px] perspective-1200 preserve-3d">
-          {/* Suelo con césped texturizado */}
           <div className="absolute inset-0 transform rotate-x-60 origin-bottom">
             <div 
               className="absolute inset-0 bg-gradient-to-b from-green-500 to-green-600"
@@ -161,7 +150,6 @@ const GardenVisualization = ({
               }}
             />
 
-            {/* Grid para mejor efecto isométrico */}
             <div 
               className="absolute inset-0" 
               style={{ 
@@ -185,14 +173,12 @@ const GardenVisualization = ({
             />
           </div>
 
-          {/* Nivel de agua (energía) */}
           <div 
             className="absolute left-0 right-0 bottom-0 transform rotate-x-60 origin-bottom interactive-element"
             style={{ height: `${waterLevel}px` }}
             onClick={() => handleElementClick('energy')}
           >
             <div className="absolute inset-0 bg-blue-400/20 animate-pulse">
-              {/* Efecto de ondas */}
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
@@ -209,7 +195,6 @@ const GardenVisualization = ({
               ))}
             </div>
             
-            {/* Gotas de agua */}
             {Array.from({ length: Math.floor(energy / 2) }).map((_, i) => (
               <div 
                 key={i}
@@ -223,15 +208,12 @@ const GardenVisualization = ({
               </div>
             ))}
             
-            {/* Tooltip para energía */}
             <div className="garden-tooltip">
               Ajustar nivel de energía
             </div>
           </div>
 
-          {/* Árbol central con sistema de raíces integrado */}
           <div className="absolute left-1/2 bottom-0 transform -translate-x-1/2 preserve-3d">
-            {/* Sistema de raíces integrado */}
             <div 
               className="absolute left-0 bottom-0 transform rotate-x-60 origin-bottom interactive-element"
               style={{ width: `${rootsWidth}px` }}
@@ -263,13 +245,11 @@ const GardenVisualization = ({
                 />
               </svg>
               
-              {/* Tooltip para raíces */}
               <div className="garden-tooltip">
                 Ajustar nivel de preocupaciones
               </div>
             </div>
 
-            {/* Tronco del árbol */}
             <div 
               className="absolute bottom-0 left-1/2 transform -translate-x-1/2 interactive-element"
               onClick={() => handleElementClick('mentalPressure')}
@@ -282,7 +262,6 @@ const GardenVisualization = ({
                   boxShadow: '2px 4px 6px rgba(0,0,0,0.2)'
                 }}
               >
-                {/* Textura del tronco */}
                 <div className="absolute inset-0 overflow-hidden rounded-md">
                   {Array.from({ length: 8 }).map((_, i) => (
                     <div 
@@ -299,13 +278,11 @@ const GardenVisualization = ({
                   ))}
                 </div>
 
-                {/* Tooltip para el tronco */}
                 <div className="garden-tooltip">
                   Ajustar presión mental
                 </div>
               </div>
 
-              {/* Copa del árbol unificada */}
               <div 
                 className={cn(
                   "absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-z-3 translate-y-neg",
@@ -317,7 +294,6 @@ const GardenVisualization = ({
                   transform: `translateZ(3px) translateY(-${treeHeight * 0.9}px)`,
                 }}
               >
-                {/* Forma principal de la copa */}
                 <div 
                   className="bg-gradient-to-b from-green-700 to-green-600 rounded-[40%]"
                   style={{ 
@@ -326,7 +302,6 @@ const GardenVisualization = ({
                     boxShadow: '0 10px 15px rgba(0,0,0,0.1)'
                   }}
                 >
-                  {/* Textura para la copa */}
                   <div className="absolute inset-0 rounded-[40%] overflow-hidden">
                     {Array.from({ length: 10 }).map((_, i) => (
                       <div 
@@ -343,7 +318,6 @@ const GardenVisualization = ({
                   </div>
                 </div>
 
-                {/* Hojas adicionales para dar profundidad */}
                 {Array.from({ length: 10 }).map((_, i) => (
                   <div 
                     key={i}
@@ -369,7 +343,6 @@ const GardenVisualization = ({
                   </div>
                 ))}
 
-                {/* Frutos integrados en la copa (solo si es día excepcional) */}
                 {fruitsCount > 0 && (
                   <div 
                     className="absolute inset-0 interactive-element"
@@ -396,7 +369,6 @@ const GardenVisualization = ({
                       </div>
                     ))}
                     
-                    {/* Tooltip para día excepcional */}
                     <div className="garden-tooltip">
                       ¿Día excepcional?
                     </div>
@@ -406,7 +378,6 @@ const GardenVisualization = ({
             </div>
           </div>
 
-          {/* Flores - representación de logros */}
           <div 
             className="absolute inset-x-8 bottom-2 h-20 transform rotate-x-60 origin-bottom interactive-element"
             onClick={() => handleElementClick('achievements')}
@@ -426,7 +397,6 @@ const GardenVisualization = ({
                         transform: 'translateZ(2px)',
                       }}
                     >
-                      {/* Tallo */}
                       <div 
                         className="w-1 bg-green-700 transform" 
                         style={{ 
@@ -437,7 +407,6 @@ const GardenVisualization = ({
                         }}
                       />
                       
-                      {/* Flor */}
                       <div 
                         className="absolute -top-4 -left-3 flex transform translate-z-1"
                       >
@@ -449,8 +418,7 @@ const GardenVisualization = ({
                             i % 5 === 2 ? "text-yellow-400" : 
                             i % 5 === 3 ? "text-blue-400" : 
                             "text-red-400",
-                            "drop-shadow-sm",
-                            "animate-[sway_3s_ease-in-out_infinite]"
+                            "drop-shadow-sm animate-[sway_3s_ease-in-out_infinite]"
                           )}
                           style={{
                             animationDelay: `${i * 0.2}s`
@@ -463,15 +431,12 @@ const GardenVisualization = ({
               </>
             )}
             
-            {/* Tooltip para logros */}
             <div className="garden-tooltip transform translate-z-4">
               Ajustar nivel de logros
             </div>
           </div>
 
-          {/* Arbustos decorativos integrados */}
           <div className="absolute bottom-0 left-0 right-0 transform rotate-x-60 origin-bottom">
-            {/* Arbusto izquierdo */}
             <div 
               className="absolute bottom-2 left-6 transform translate-z-1"
             >
@@ -481,7 +446,6 @@ const GardenVisualization = ({
               />
             </div>
             
-            {/* Arbusto derecho */}
             <div 
               className="absolute bottom-2 right-6 transform translate-z-1"
             >
@@ -492,13 +456,11 @@ const GardenVisualization = ({
             </div>
           </div>
 
-          {/* Elementos animados: mariposas y abejas */}
           {energy > 6 && (
             <>
-              {/* Mariposas */}
               {Array.from({ length: 3 }).map((_, i) => (
                 <div 
-                  key={`butterfly-${i}`}
+                  key={`bird-${i}`}
                   className="absolute transform"
                   style={{ 
                     top: `${15 + i * 15}%`, 
@@ -508,7 +470,7 @@ const GardenVisualization = ({
                     transform: 'translateZ(10px)'
                   }}
                 >
-                  <Butterfly 
+                  <Bird 
                     size={i % 2 === 0 ? 18 : 16} 
                     className={cn(
                       i % 3 === 0 ? "text-purple-300" : 
@@ -524,7 +486,6 @@ const GardenVisualization = ({
             </>
           )}
 
-          {/* Abejas que aparecen si hay logros significativos */}
           {achievements > 7 && (
             <>
               {Array.from({ length: 2 }).map((_, i) => (
@@ -554,7 +515,6 @@ const GardenVisualization = ({
         </div>
       </div>
 
-      {/* Modales contextuales para interacción */}
       {activeInteraction && (
         <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
           <Card className="w-full max-w-md animate-in slide-in-from-bottom-10 duration-300">
@@ -608,7 +568,6 @@ const GardenVisualization = ({
                 </Button>
               </div>
 
-              {/* Contenido según el tipo de interacción */}
               {activeInteraction === 'exceptionalDay' ? (
                 <RadioGroup 
                   value={exceptionalDay.toString()} 
