@@ -11,7 +11,7 @@ import { useTeamData } from '@/hooks/useTeamData';
 
 const LeaderDashboard = () => {
   const { user, isLoading: isAuthLoading, signOut } = useAuth();
-  const { isLeader } = useTeamData();
+  const { isLoading: isTeamDataLoading } = useTeamData();
   const navigate = useNavigate();
   
   React.useEffect(() => {
@@ -35,31 +35,12 @@ const LeaderDashboard = () => {
     }
   };
   
-  if (isAuthLoading) {
+  if (isAuthLoading || isTeamDataLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
           <div className="h-12 w-12 mb-4 rounded-full bg-gray-200"></div>
           <span className="text-lg font-medium">Cargando...</span>
-        </div>
-      </div>
-    );
-  }
-  
-  if (!isLeader) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-garden-light">
-        <div className="text-center mb-8 max-w-md">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Acceso Restringido</h1>
-          <p className="text-lg text-muted-foreground mb-6">
-            No tienes los permisos necesarios para acceder al panel de líderes.
-          </p>
-          <Button 
-            onClick={() => navigate('/garden')}
-            variant="default"
-          >
-            Volver a mi jardín
-          </Button>
         </div>
       </div>
     );

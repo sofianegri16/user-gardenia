@@ -6,17 +6,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { TeamEmotionalData } from '@/types/leader';
 
 export const useTeamData = () => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [teamData, setTeamData] = useState<TeamEmotionalData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Safely check the role property which might not be in the type yet
-  const roleValue = profile && 'role' in profile ? (profile as any).role : null;
-  const isLeader = roleValue === 'leader' || roleValue === 'admin';
+  // Since all users are now leaders, we can simplify this
+  const isLeader = true;
   
   const fetchTeamData = async () => {
-    if (!user || !isLeader) {
+    if (!user) {
       setIsLoading(false);
       return;
     }
@@ -54,10 +53,10 @@ export const useTeamData = () => {
   };
   
   useEffect(() => {
-    if (user && isLeader) {
+    if (user) {
       fetchTeamData();
     }
-  }, [user, isLeader]);
+  }, [user]);
   
   return {
     teamData,

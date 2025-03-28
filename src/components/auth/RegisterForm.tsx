@@ -35,6 +35,7 @@ const RegisterForm = () => {
     setIsSubmitting(true);
 
     try {
+      // The role will be automatically set to 'leader' by the database default value
       await signUp(email, password);
       // We'll redirect to login since they need to verify email first
       navigate('/login', { 

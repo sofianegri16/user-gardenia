@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,20 +8,7 @@ import TeamAlerts from './TeamAlerts';
 import TeamGarden from './TeamGarden';
 
 const TeamDashboard = () => {
-  const { teamData, isLoading, error, isLeader } = useTeamData();
-  
-  if (!isLeader) {
-    return (
-      <Card className="col-span-3">
-        <CardHeader>
-          <CardTitle>Acceso restringido</CardTitle>
-          <CardDescription>
-            No tienes los permisos necesarios para acceder al panel de líderes
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
+  const { teamData, isLoading, error } = useTeamData();
   
   if (isLoading) {
     return (
