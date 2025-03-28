@@ -1,7 +1,18 @@
+
 import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { WeatherType } from '@/types/garden';
 import * as THREE from 'three';
+
+// Importar los componentes refactorizados
+import Tree from './elements/Tree';
+import Ground from './elements/Ground';
+import Sky from './elements/Sky';
+import Roots from './elements/Roots';
+import Water from './elements/Water';
+import Flowers from './elements/Flowers';
+import WeatherElements from './elements/Weather';
+import Insects from './elements/Insects';
 
 interface GardenSceneProps {
   energy: number;
@@ -25,15 +36,11 @@ const GardenScene: React.FC<GardenSceneProps> = ({
   isAnimating
 }) => {
   const sceneRef = useRef<THREE.Group>(null);
-  const treeRef = useRef<THREE.Group>(null);
   const rootsRef = useRef<THREE.Group>(null);
   const waterRef = useRef<THREE.Group>(null);
-  const flowersRef = useRef<THREE.Group>(null);
   const skyRef = useRef<THREE.Mesh>(null);
   const raindropsRef = useRef<THREE.Group>(null);
-  const leavesRef = useRef<THREE.Group>(null);
   const cloudsRef = useRef<THREE.Group>(null);
-  const fruitsRef = useRef<THREE.Group>(null);
   const bugsRef = useRef<THREE.Group>(null);
   
   const [hovered, setHovered] = useState<string | null>(null);
@@ -51,24 +58,6 @@ const GardenScene: React.FC<GardenSceneProps> = ({
     cloudy: new THREE.Color('#669966'),
     rainy: new THREE.Color('#3A5F0B'),
   }), []);
-  
-  // Generar geometrías y materiales reutilizables
-  const trunkGeometry = useMemo(() => new THREE.CylinderGeometry(0.2, 0.3, 2, 12), []);
-  const trunkMaterial = useMemo(() => new THREE.MeshStandardMaterial({ color: '#8B4513', roughness: 0.8 }), []);
-  
-  const foliageGeometry = useMemo(() => new THREE.SphereGeometry(1.2, 16, 16), []);
-  const foliageMaterial = useMemo(() => 
-    new THREE.MeshStandardMaterial({ 
-      color: '#2E8B57',
-      roughness: 0.7,
-    }), []);
-  
-  const groundGeometry = useMemo(() => new THREE.PlaneGeometry(20, 20), []);
-  const groundMaterial = useMemo(() => 
-    new THREE.MeshStandardMaterial({
-      color: groundColors[weather],
-      roughness: 0.8,
-    }), [groundColors, weather]);
   
   // Crear las gotas de lluvia cuando el clima es lluvioso
   const raindrops = useMemo(() => {
@@ -170,15 +159,6 @@ const GardenScene: React.FC<GardenSceneProps> = ({
       groundMat.color.lerp(groundColors[weather], 0.01);
     }
     
-    // Animación de las hojas según la presión mental
-    if (leavesRef.current) {
-      leavesRef.current.children.forEach((leaf, i) => {
-        const intensity = mentalPressure / 10;
-        leaf.rotation.x = Math.sin(state.clock.getElapsedTime() * 2 + i) * 0.1 * intensity;
-        leaf.rotation.z = Math.cos(state.clock.getElapsedTime() * 1.5 + i) * 0.1 * intensity;
-      });
-    }
-    
     // Animación de las raíces según las preocupaciones personales
     if (rootsRef.current) {
       const scale = 0.5 + (personalConcerns / 10) * 1.5;
@@ -263,380 +243,60 @@ const GardenScene: React.FC<GardenSceneProps> = ({
   return (
     <group ref={sceneRef}>
       {/* Suelo */}
-      <mesh 
-        rotation={[-Math.PI / 2, 0, 0]} 
-        position={[0, -0.1, 0]} 
-        receiveShadow
-        geometry={groundGeometry}
-        material={groundMaterial}
-      >
-        {/* Texturas de césped */}
-        <group>
-          {Array.from({ length: 200 }).map((_, i) => (
-            <mesh 
-              key={`grass-${i}`} 
-              position={[
-                Math.random() * 16 - 8,
-                0.05,
-                Math.random() * 16 - 8
-              ]}
-              rotation={[0, Math.random() * Math.PI * 2, 0]}
-            >
-              <planeGeometry args={[0.05, 0.2]} />
-              <meshStandardMaterial 
-                color={weather === 'sunny' ? '#7CFC00' : weather === 'cloudy' ? '#669966' : '#3A5F0B'} 
-                side={THREE.DoubleSide}
-              />
-            </mesh>
-          ))}
-        </group>
-      </mesh>
+      <Ground weather={weather} groundColors={groundColors} />
       
       {/* Cielo */}
-      <mesh ref={skyRef} position={[0, 10, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[50, 50]} />
-        <meshBasicMaterial color={skyColors[weather]} side={THREE.BackSide} />
-      </mesh>
+      <Sky weather={weather} skyColors={skyColors} skyRef={skyRef} />
       
       {/* Árbol principal */}
-      <group 
-        ref={treeRef} 
-        position={[0, 0, 0]}
-        onClick={() => onElementClick('weather')}
-        onPointerOver={() => handlePointerOver('weather')}
-        onPointerOut={handlePointerOut}
-      >
-        {/* Tronco del árbol */}
-        <mesh 
-          geometry={trunkGeometry}
-          material={trunkMaterial}
-          position={[0, 1, 0]} 
-          castShadow 
-          receiveShadow
-          scale={hovered === 'weather' ? [1.05, 1.05, 1.05] : [1, 1, 1]}
-        />
-        
-        {/* Copa del árbol */}
-        <mesh 
-          geometry={foliageGeometry}
-          material={foliageMaterial}
-          position={[0, 2.8, 0]} 
-          castShadow
-          scale={hovered === 'weather' ? [1.05, 1.05, 1.05] : [1, 1, 1]}
-        />
-        
-        {/* Hojas animadas */}
-        <group ref={leavesRef} position={[0, 2.8, 0]}>
-          {Array.from({ length: 20 }).map((_, i) => (
-            <mesh 
-              key={`leaf-${i}`}
-              position={[
-                Math.random() * 1.6 - 0.8,
-                Math.random() * 1.6 - 0.8,
-                Math.random() * 1.6 - 0.8
-              ]}
-              rotation={[
-                Math.random() * Math.PI * 2,
-                Math.random() * Math.PI * 2,
-                Math.random() * Math.PI * 2
-              ]}
-              onClick={(e) => {
-                e.stopPropagation();
-                onElementClick('mentalPressure');
-              }}
-              onPointerOver={(e) => {
-                e.stopPropagation();
-                handlePointerOver('mentalPressure');
-              }}
-              onPointerOut={handlePointerOut}
-            >
-              <planeGeometry args={[0.3, 0.5]} />
-              <meshStandardMaterial 
-                color="#3CB371" 
-                side={THREE.DoubleSide}
-                transparent
-                opacity={0.9}
-              />
-            </mesh>
-          ))}
-        </group>
-        
-        {/* Frutos (si es un día excepcional) */}
-        <group 
-          ref={fruitsRef} 
-          position={[0, 2.8, 0]}
-          onClick={(e) => {
-            e.stopPropagation();
-            onElementClick('exceptionalDay');
-          }}
-          onPointerOver={(e) => {
-            e.stopPropagation();
-            handlePointerOver('exceptionalDay');
-          }}
-          onPointerOut={handlePointerOut}
-        >
-          {fruits.map((fruit, i) => (
-            <mesh 
-              key={`fruit-${i}`} 
-              position={fruit.position} 
-              scale={[fruit.scale, fruit.scale, fruit.scale]}
-            >
-              <sphereGeometry args={[1, 16, 16]} />
-              <meshStandardMaterial color="#FF0000" roughness={0.4} />
-              <mesh position={[0, 0.8, 0]}>
-                <cylinderGeometry args={[0.05, 0.05, 0.3, 8]} />
-                <meshStandardMaterial color="#5D4037" />
-              </mesh>
-            </mesh>
-          ))}
-        </group>
-      </group>
+      <Tree 
+        onElementClick={onElementClick}
+        hovered={hovered}
+        handlePointerOver={handlePointerOver}
+        handlePointerOut={handlePointerOut}
+        mentalPressure={mentalPressure}
+        exceptionalDay={exceptionalDay}
+        fruits={fruits}
+      />
       
       {/* Raíces */}
-      <group 
-        ref={rootsRef} 
-        position={[0, -0.1, 0]}
-        onClick={() => onElementClick('personalConcerns')}
-        onPointerOver={() => handlePointerOver('personalConcerns')}
-        onPointerOut={handlePointerOut}
-        scale={[1, 1, 1]}
-      >
-        {Array.from({ length: 8 }).map((_, i) => {
-          const angle = (i / 8) * Math.PI * 2;
-          const length = 0.3 + Math.random() * 0.4;
-          const curve = Math.random() * 0.2;
-          
-          return (
-            <mesh key={`root-${i}`} position={[0, 0, 0]}>
-              <tubeGeometry args={[
-                new THREE.CatmullRomCurve3([
-                  new THREE.Vector3(0, 0, 0),
-                  new THREE.Vector3(
-                    Math.sin(angle) * 0.3,
-                    -0.15,
-                    Math.cos(angle) * 0.3
-                  ),
-                  new THREE.Vector3(
-                    Math.sin(angle) * (0.3 + length),
-                    -0.3 - curve,
-                    Math.cos(angle) * (0.3 + length)
-                  )
-                ]),
-                12,
-                0.04,
-                8,
-                false
-              ]} />
-              <meshStandardMaterial color="#8B4513" roughness={0.9} />
-            </mesh>
-          );
-        })}
-      </group>
+      <Roots 
+        onElementClick={onElementClick}
+        handlePointerOver={handlePointerOver}
+        handlePointerOut={handlePointerOut}
+        scale={[1, 1, 1]} // Se actualiza dinámicamente en useFrame
+        ref={rootsRef}
+      />
       
       {/* Agua (energía) */}
-      <group 
-        ref={waterRef} 
+      <Water 
         position={[-3, 0, 2]}
-        onClick={() => onElementClick('energy')}
-        onPointerOver={() => handlePointerOver('energy')}
-        onPointerOut={handlePointerOut}
-        scale={[1, 1, 1]}
-      >
-        <mesh position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[0.8, 32]} />
-          <meshStandardMaterial 
-            color="#4682B4" 
-            transparent 
-            opacity={0.6}
-          />
-        </mesh>
-        
-        {/* Ondas de agua */}
-        {Array.from({ length: 3 }).map((_, i) => (
-          <mesh 
-            key={`water-ring-${i}`} 
-            position={[0, 0.12 + i * 0.01, 0]} 
-            rotation={[-Math.PI / 2, 0, 0]}
-          >
-            <ringGeometry args={[0.7 - i * 0.2, 0.8 - i * 0.2, 32]} />
-            <meshStandardMaterial 
-              color="#87CEEB" 
-              transparent 
-              opacity={0.4 - i * 0.1}
-            />
-          </mesh>
-        ))}
-      </group>
+        onElementClick={onElementClick}
+        handlePointerOver={handlePointerOver}
+        handlePointerOut={handlePointerOut}
+        scale={[1, 1, 1]} // Se actualiza dinámicamente en useFrame
+        ref={waterRef}
+      />
       
       {/* Flores (logros) */}
-      <group 
-        ref={flowersRef} 
-        onClick={() => onElementClick('achievements')}
-        onPointerOver={() => handlePointerOver('achievements')}
-        onPointerOut={handlePointerOut}
-      >
-        {flowers.map((flower, i) => (
-          <group 
-            key={`flower-${i}`} 
-            position={flower.position} 
-            rotation={[0, flower.rotation, 0]}
-            scale={[flower.scale, flower.scale, flower.scale]}
-          >
-            {/* Tallo */}
-            <mesh position={[0, 0.5, 0]}>
-              <cylinderGeometry args={[0.05, 0.05, 1, 8]} />
-              <meshStandardMaterial color="#228B22" />
-            </mesh>
-            
-            {/* Pétalos */}
-            {Array.from({ length: 5 }).map((_, j) => {
-              const petalAngle = (j / 5) * Math.PI * 2;
-              return (
-                <mesh 
-                  key={`petal-${i}-${j}`} 
-                  position={[
-                    Math.sin(petalAngle) * 0.2, 
-                    1, 
-                    Math.cos(petalAngle) * 0.2
-                  ]}
-                  rotation={[
-                    Math.PI / 3, 
-                    0, 
-                    petalAngle
-                  ]}
-                >
-                  <sphereGeometry args={[0.2, 8, 8, 0, Math.PI]} />
-                  <meshStandardMaterial color={flower.color} side={THREE.DoubleSide} />
-                </mesh>
-              );
-            })}
-            
-            {/* Centro de la flor */}
-            <mesh position={[0, 1, 0]}>
-              <sphereGeometry args={[0.1, 16, 16]} />
-              <meshStandardMaterial color="#FFD700" />
-            </mesh>
-          </group>
-        ))}
-      </group>
+      <Flowers 
+        flowers={flowers}
+        onElementClick={onElementClick}
+        handlePointerOver={handlePointerOver}
+        handlePointerOut={handlePointerOut}
+      />
       
-      {/* Gotas de lluvia */}
-      <group ref={raindropsRef}>
-        {weather === 'rainy' && raindrops.map((drop, i) => (
-          <mesh 
-            key={`raindrop-${i}`} 
-            position={drop.position}
-          >
-            <capsuleGeometry args={[drop.size / 5, drop.size, 8, 4]} />
-            <meshStandardMaterial color="#87CEFA" transparent opacity={0.6} />
-          </mesh>
-        ))}
-      </group>
+      {/* Elementos del clima */}
+      <WeatherElements 
+        weather={weather}
+        raindrops={raindrops}
+        clouds={clouds}
+        raindropsRef={raindropsRef}
+        cloudsRef={cloudsRef}
+      />
       
-      {/* Nubes */}
-      <group ref={cloudsRef}>
-        {(weather === 'cloudy' || weather === 'rainy') && clouds.map((cloud, i) => (
-          <group 
-            key={`cloud-${i}`} 
-            position={cloud.position}
-            scale={cloud.scale}
-          >
-            <mesh position={[0, 0, 0]}>
-              <sphereGeometry args={[0.5, 16, 16]} />
-              <meshStandardMaterial 
-                color={weather === 'cloudy' ? '#E0E0E0' : '#A9A9A9'} 
-                transparent opacity={0.9} 
-              />
-            </mesh>
-            <mesh position={[0.4, 0, 0]}>
-              <sphereGeometry args={[0.4, 16, 16]} />
-              <meshStandardMaterial 
-                color={weather === 'cloudy' ? '#E0E0E0' : '#A9A9A9'} 
-                transparent opacity={0.9} 
-              />
-            </mesh>
-            <mesh position={[-0.4, 0, 0]}>
-              <sphereGeometry args={[0.4, 16, 16]} />
-              <meshStandardMaterial 
-                color={weather === 'cloudy' ? '#E0E0E0' : '#A9A9A9'} 
-                transparent opacity={0.9} 
-              />
-            </mesh>
-            <mesh position={[0, 0, 0.4]}>
-              <sphereGeometry args={[0.3, 16, 16]} />
-              <meshStandardMaterial 
-                color={weather === 'cloudy' ? '#E0E0E0' : '#A9A9A9'} 
-                transparent opacity={0.9} 
-              />
-            </mesh>
-          </group>
-        ))}
-      </group>
-      
-      {/* Mariposas y abejas */}
-      <group ref={bugsRef}>
-        {bugs.map((bug, i) => {
-          if (bug.type === 'butterfly') {
-            return (
-              <group key={`butterfly-${i}`} position={bug.position}>
-                <mesh position={[0, 0, 0]}>
-                  <cylinderGeometry args={[0.02, 0.02, 0.2, 8]} />
-                  <meshStandardMaterial color="#000000" />
-                </mesh>
-                
-                {/* Alas */}
-                <group position={[0, 0, 0]}>
-                  <mesh position={[0.1, 0, 0]} rotation={[0, 0, 0]}>
-                    <planeGeometry args={[0.2, 0.15]} />
-                    <meshStandardMaterial
-                      color="#FF69B4"
-                      side={THREE.DoubleSide}
-                      transparent
-                      opacity={0.8}
-                    />
-                  </mesh>
-                </group>
-                
-                <group position={[0, 0, 0]}>
-                  <mesh position={[-0.1, 0, 0]} rotation={[0, 0, 0]}>
-                    <planeGeometry args={[0.2, 0.15]} />
-                    <meshStandardMaterial
-                      color="#FF69B4"
-                      side={THREE.DoubleSide}
-                      transparent
-                      opacity={0.8}
-                    />
-                  </mesh>
-                </group>
-              </group>
-            );
-          } else {
-            return (
-              <group key={`bee-${i}`} position={bug.position}>
-                <mesh position={[0, 0, 0]}>
-                  <capsuleGeometry args={[0.05, 0.1, 8, 8]} />
-                  <meshStandardMaterial color="#FFD700" />
-                </mesh>
-                <mesh position={[0, 0, 0]}>
-                  <capsuleGeometry args={[0.05, 0.1, 8, 8]} />
-                  <meshStandardMaterial color="#000000" wireframe />
-                </mesh>
-                
-                {/* Alas */}
-                <mesh position={[0, 0.05, 0]} rotation={[Math.PI / 2, 0, 0]}>
-                  <planeGeometry args={[0.15, 0.1]} />
-                  <meshStandardMaterial
-                    color="#FFFFFF"
-                    side={THREE.DoubleSide}
-                    transparent
-                    opacity={0.5}
-                  />
-                </mesh>
-              </group>
-            );
-          }
-        })}
-      </group>
+      {/* Insectos */}
+      <Insects bugs={bugs} ref={bugsRef} />
     </group>
   );
 };
