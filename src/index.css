@@ -119,23 +119,67 @@
   }
 
   /* Isometric helpers */
-  .perspective {
+  .perspective-1000 {
     perspective: 1000px;
+  }
+  
+  .perspective-1200 {
+    perspective: 1200px;
   }
   
   .preserve-3d {
     transform-style: preserve-3d;
   }
   
-  .backface-hidden {
-    backface-visibility: hidden;
+  .rotate-x-60 {
+    transform: rotateX(60deg);
+  }
+  
+  .translate-z-1 {
+    transform: translateZ(1px);
+  }
+  
+  .translate-z-2 {
+    transform: translateZ(2px);
+  }
+  
+  .translate-z-3 {
+    transform: translateZ(3px);
+  }
+  
+  .translate-z-4 {
+    transform: translateZ(4px);
+  }
+  
+  .translate-z-10 {
+    transform: translateZ(10px);
+  }
+  
+  .translate-y-neg {
+    transform: translateY(-100%);
+  }
+  
+  .origin-bottom {
+    transform-origin: center bottom;
+  }
+  
+  .interactive-element {
+    @apply cursor-pointer transition-all duration-300 relative hover:brightness-105;
+  }
+  
+  .garden-tooltip {
+    @apply absolute opacity-0 bg-black/60 text-white text-xs px-2 py-1 rounded pointer-events-none transition-opacity duration-300 backdrop-blur-sm z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2;
+  }
+  
+  .interactive-element:hover .garden-tooltip {
+    @apply opacity-100;
   }
 }
 
 /* Animaciones para el jardín emocional */
 @keyframes fall {
-  0% { transform: translateY(0); opacity: 0.8; }
-  80% { opacity: 0.5; }
+  0% { transform: translateY(-20px); opacity: 0.9; }
+  80% { opacity: 0.6; }
   100% { transform: translateY(100px); opacity: 0; }
 }
 
@@ -180,29 +224,17 @@
   100% { transform: rotate(0deg) translateY(0); }
 }
 
-/* Enhance 3D depth */
+/* Escena del jardín */
 .garden-scene {
   transform-style: preserve-3d;
   perspective: 800px;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
 }
 
-/* Interaction helpers */
-.interactive-element {
-  @apply transition-all duration-300 cursor-pointer;
-}
-
-.interactive-element:hover {
-  @apply transform scale-105;
-  filter: brightness(1.1);
-}
-
-/* Tooltip styles */
-.garden-tooltip {
-  @apply absolute bg-black/60 text-white text-xs rounded px-2 py-1 z-50
-         opacity-0 transition-opacity duration-300 pointer-events-none
-         backdrop-blur-sm;
-}
-
-.interactive-element:hover .garden-tooltip {
-  @apply opacity-100;
+.garden-scene:hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transform: translateY(-2px);
 }

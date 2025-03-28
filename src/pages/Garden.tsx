@@ -55,10 +55,10 @@ const Garden = () => {
 
   if (isAuthLoading || isDataLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-garden-background">
         <div className="animate-pulse text-garden-primary flex flex-col items-center">
           <Leaf className="h-12 w-12 mb-4 animate-spin" />
-          <span>Cargando tu jardín emocional...</span>
+          <span className="text-lg font-medium">Cargando tu jardín emocional...</span>
         </div>
       </div>
     );

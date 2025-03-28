@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { WeatherEmotions, WeatherType } from '@/types/garden';
 import GardenVisualization from './GardenVisualization';
+import { Sun, Cloud, CloudRain, TreeDeciduous } from 'lucide-react';
 
 interface GardenCheckInFormProps {
   initialEnergy: number;
@@ -80,10 +81,10 @@ const GardenCheckInForm = ({
 
   return (
     <div className="w-full">
-      {/* Jardín 3D */}
-      <div className="mb-6 perspective preserve-3d">
+      {/* Escena del jardín 3D isométrico */}
+      <div className="mb-6 perspective-1000 preserve-3d">
         {selectedWeather ? (
-          <div className="transform transition-all duration-500 hover:shadow-xl">
+          <div className="transform transition-all duration-500 hover:shadow-2xl rounded-2xl overflow-hidden">
             <GardenVisualization
               energy={energy}
               mentalPressure={mentalPressure}
@@ -99,37 +100,37 @@ const GardenCheckInForm = ({
             />
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center p-10 h-[400px] bg-gradient-to-b from-green-100 to-green-200 rounded-xl border border-green-300 text-center">
+          <div className="flex flex-col items-center justify-center p-10 h-[400px] bg-gradient-to-b from-garden-light to-garden-background rounded-2xl border border-garden-border shadow-lg text-center">
             <div className="mb-6 text-garden-primary">
-              <TreeDeciduous size={64} />
+              <TreeDeciduous size={64} className="mx-auto" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Elige tu estado emocional</h3>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
               Para comenzar a cultivar tu jardín emocional, selecciona cómo te sientes hoy
             </p>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3 justify-center">
               <Button
                 onClick={() => handleUpdateWeather('sunny')}
                 variant="outline"
-                className="flex gap-2 items-center"
+                className="flex gap-2 items-center hover:bg-yellow-50 hover:text-yellow-600 transition-colors"
               >
-                <Sun size={16} className="text-yellow-500" />
+                <Sun size={20} className="text-yellow-500" />
                 <span>Soleado</span>
               </Button>
               <Button
                 onClick={() => handleUpdateWeather('cloudy')}
                 variant="outline"
-                className="flex gap-2 items-center"
+                className="flex gap-2 items-center hover:bg-gray-100 hover:text-gray-600 transition-colors"
               >
-                <Cloud size={16} className="text-gray-500" />
+                <Cloud size={20} className="text-gray-500" />
                 <span>Nublado</span>
               </Button>
               <Button
                 onClick={() => handleUpdateWeather('rainy')}
                 variant="outline"
-                className="flex gap-2 items-center"
+                className="flex gap-2 items-center hover:bg-blue-50 hover:text-blue-600 transition-colors"
               >
-                <CloudRain size={16} className="text-blue-500" />
+                <CloudRain size={20} className="text-blue-500" />
                 <span>Lluvioso</span>
               </Button>
             </div>
@@ -137,13 +138,13 @@ const GardenCheckInForm = ({
         )}
       </div>
 
-      {/* Save Button - Only shown if weather is selected but we want manual saving */}
+      {/* Botón de guardar - Solo mostrado si el clima está seleccionado */}
       {selectedWeather && (
-        <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+        <div className="text-center p-4 bg-white rounded-xl shadow-sm">
           <Button 
             onClick={handleSubmitForm}
             disabled={isSubmitting || selectedWeather === null}
-            className="w-full"
+            className="w-full bg-garden-primary hover:bg-garden-dark text-white font-medium transition-colors"
           >
             {isSubmitting 
               ? 'Guardando estado emocional...' 
@@ -154,8 +155,5 @@ const GardenCheckInForm = ({
     </div>
   );
 };
-
-// Importing icons
-import { Sun, Cloud, CloudRain, TreeDeciduous } from 'lucide-react';
 
 export default GardenCheckInForm;

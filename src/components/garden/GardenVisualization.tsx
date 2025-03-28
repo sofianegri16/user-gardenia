@@ -6,8 +6,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { 
-  Droplet, Wind, Flower, Apple, Leaf, TreeDeciduous,
-  Sun, Cloud, CloudRain, X, TreePine
+  Droplet, Wind, Flower, Apple, Leaf, 
+  Sun, Cloud, CloudRain, X, TreeDeciduous, TreePine, Butterfly
 } from 'lucide-react';
 import { WeatherType } from '@/types/garden';
 import { cn } from '@/lib/utils';
@@ -43,9 +43,8 @@ const GardenVisualization = ({
 }: GardenVisualizationProps) => {
   const gardenRef = useRef<HTMLDivElement>(null);
   
-  // Estado para las animaciones
+  // Estados para animaciones y interacción
   const [isAnimating, setIsAnimating] = useState(false);
-  // Estado para controlar qué elemento está siendo interactuado
   const [activeInteraction, setActiveInteraction] = useState<InteractionType>(null);
   
   // Inicia animación cuando se monta el componente o cambian los datos
@@ -55,78 +54,68 @@ const GardenVisualization = ({
     return () => clearTimeout(timer);
   }, [energy, mentalPressure, personalConcerns, achievements, exceptionalDay, weather]);
 
-  // Calculamos la altura del árbol basado en la energía y los logros
-  const treeHeight = Math.max(40, Math.min(90, (energy + achievements) * 4));
-  
-  // Calculamos la anchura de las raíces basado en preocupaciones personales
+  // Calculamos parámetros visuales basados en los datos emocionales
+  const treeHeight = Math.max(45, Math.min(90, (energy + achievements) * 4));
   const rootsWidth = Math.max(30, Math.min(100, personalConcerns * 8));
-  
-  // Calculamos la cantidad de frutos según si fue un día excepcional
-  const fruitsCount = exceptionalDay === 1 ? 3 : 0;
-  
-  // Calculamos la cantidad de flores según los logros
-  const flowersCount = Math.min(8, Math.max(0, Math.floor(achievements / 2)));
-  
-  // Intensidad del viento según la presión mental
+  const fruitsCount = exceptionalDay === 1 ? 5 : 0;
+  const flowersCount = Math.min(10, Math.max(0, Math.floor(achievements / 1.5)));
   const windIntensity = mentalPressure;
+  const waterLevel = Math.max(8, energy * 3);
 
-  // Manejador para abrir el modal de interacción
+  // Manejadores de interacción
   const handleElementClick = (type: InteractionType) => {
     setActiveInteraction(type);
   };
 
-  // Manejador para cerrar el modal de interacción
   const handleCloseInteraction = () => {
     setActiveInteraction(null);
   };
 
-  // Manejador para actualizar el valor del elemento seleccionado
   const handleUpdateValue = (value: number) => {
     if (activeInteraction && activeInteraction !== 'weather') {
       onUpdateValues(activeInteraction, value);
     }
   };
 
-  // Manejador para actualizar el clima
   const handleUpdateWeather = (newWeather: WeatherType) => {
     onUpdateWeather(newWeather);
   };
 
   return (
-    <div className="relative w-full h-[600px] overflow-hidden rounded-xl shadow-lg">
-      {/* Escena principal - Ambiente 3D */}
-      <div className="absolute inset-0 perspective preserve-3d" style={{ perspective: '1200px' }}>
+    <div className="relative w-full h-[600px] overflow-hidden rounded-2xl shadow-xl">
+      {/* Escena principal - Jardín isométrico 3D */}
+      <div className="absolute inset-0 garden-scene perspective-1000 bg-gradient-to-b from-green-50 to-green-100">
         {/* Cielo según el clima */}
         <div 
           className={cn(
-            "w-full h-32 transition-colors duration-1000 relative",
-            weather === 'sunny' ? "bg-gradient-to-b from-blue-400 to-blue-300" : 
+            "w-full h-32 transition-colors duration-1000 relative overflow-hidden",
+            weather === 'sunny' ? "bg-gradient-to-b from-sky-400 to-blue-300" : 
             weather === 'cloudy' ? "bg-gradient-to-b from-gray-400 to-gray-300" : 
-            "bg-gradient-to-b from-gray-600 to-gray-500"
+            "bg-gradient-to-b from-indigo-700 to-gray-500"
           )}
           onClick={() => handleElementClick('weather')}
         >
           {/* Tooltip para interacción */}
-          <div className="garden-tooltip absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="garden-tooltip">
             Cambiar clima y estado emocional
           </div>
           
           {/* Elementos del cielo según el clima */}
           {weather === 'sunny' && (
-            <div className="absolute top-4 right-8 text-yellow-400 animate-[pulse_3s_ease-in-out_infinite]">
-              <Sun size={48} />
+            <div className="absolute top-6 right-10 text-yellow-300 animate-[pulse_3s_ease-in-out_infinite]">
+              <Sun size={48} className="drop-shadow-lg" />
             </div>
           )}
           
           {weather === 'cloudy' && (
             <>
-              <div className="absolute top-6 right-8 text-gray-200 animate-[float_20s_ease-in-out_infinite]">
-                <Cloud size={32} />
+              <div className="absolute top-6 right-10 text-gray-200 animate-[float_20s_ease-in-out_infinite]">
+                <Cloud size={40} className="drop-shadow-md" />
               </div>
-              <div className="absolute top-12 right-16 text-gray-300 animate-[float_15s_ease-in-out_infinite_reverse]">
-                <Cloud size={24} />
+              <div className="absolute top-12 right-24 text-gray-300 animate-[float_15s_ease-in-out_infinite_reverse]">
+                <Cloud size={28} />
               </div>
-              <div className="absolute top-5 left-8 text-gray-200 animate-[float_25s_ease-in-out_infinite]">
+              <div className="absolute top-5 left-10 text-gray-200 animate-[float_25s_ease-in-out_infinite]">
                 <Cloud size={36} />
               </div>
             </>
@@ -134,21 +123,20 @@ const GardenVisualization = ({
           
           {weather === 'rainy' && (
             <>
-              <div className="absolute top-4 right-10 text-gray-400 animate-[float_12s_ease-in-out_infinite]">
-                <CloudRain size={42} />
+              <div className="absolute top-4 left-0 right-0 flex justify-around">
+                <CloudRain size={38} className="text-gray-400 animate-[float_12s_ease-in-out_infinite]" />
+                <CloudRain size={46} className="text-gray-500 animate-[float_15s_ease-in-out_infinite_reverse]" />
+                <CloudRain size={42} className="text-gray-400 animate-[float_18s_ease-in-out_infinite]" />
               </div>
-              <div className="absolute top-6 left-10 text-gray-500 animate-[float_15s_ease-in-out_infinite_reverse]">
-                <CloudRain size={36} />
-              </div>
-              <div className="rain-container absolute inset-0">
-                {Array.from({ length: 20 }).map((_, i) => (
+              <div className="absolute inset-0">
+                {Array.from({ length: 30 }).map((_, i) => (
                   <div
                     key={i}
-                    className="rain-drop absolute bg-blue-300/70 w-0.5 h-3 rounded-full animate-[fall_1s_linear_infinite]"
+                    className="absolute bg-blue-300/80 w-[1px] h-6 rounded-full animate-[fall_1.5s_linear_infinite]"
                     style={{
                       left: `${Math.random() * 100}%`,
-                      top: `${Math.random() * 100}%`,
-                      animationDuration: `${0.7 + Math.random() * 1}s`,
+                      top: `${Math.random() * 30}%`,
+                      animationDuration: `${0.7 + Math.random() * 1.5}s`,
                       animationDelay: `${Math.random() * 2}s`
                     }}
                   />
@@ -158,22 +146,15 @@ const GardenVisualization = ({
           )}
         </div>
 
-        {/* Escena principal del jardín - Estilo isométrico */}
-        <div className="garden-scene relative w-full h-[568px]">
-          {/* Fondo césped con efecto isométrico */}
-          <div 
-            className="absolute inset-0 transform preserve-3d backface-hidden"
-            style={{ transformStyle: 'preserve-3d', transform: 'rotateX(60deg)', transformOrigin: 'center bottom' }}
-          >
-            {/* Base de césped con textura */}
+        {/* Escena isométrica del jardín */}
+        <div className="relative w-full h-[568px] perspective-1200 preserve-3d">
+          {/* Suelo con césped texturizado */}
+          <div className="absolute inset-0 transform rotate-x-60 origin-bottom">
             <div 
               className="absolute inset-0 bg-gradient-to-b from-green-500 to-green-600"
               style={{
                 backgroundImage: `
-                  linear-gradient(
-                    rgba(34, 197, 94, 0.8), 
-                    rgba(22, 163, 74, 0.9)
-                  ),
+                  linear-gradient(rgba(34, 197, 94, 0.8), rgba(22, 163, 74, 0.9)),
                   url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='rgba(255,255,255,.1)' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E")
                 `,
                 boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.1)'
@@ -204,19 +185,15 @@ const GardenVisualization = ({
             />
           </div>
 
-          {/* Nivel del agua (energía) con efecto 3D */}
+          {/* Nivel de agua (energía) */}
           <div 
-            className="absolute left-0 right-0 bottom-0 interactive-element transform backface-hidden"
-            style={{ 
-              height: `${Math.max(8, energy * 3)}px`,
-              transform: 'rotateX(60deg)', 
-              transformOrigin: 'center bottom'
-            }}
+            className="absolute left-0 right-0 bottom-0 transform rotate-x-60 origin-bottom interactive-element"
+            style={{ height: `${waterLevel}px` }}
             onClick={() => handleElementClick('energy')}
           >
             <div className="absolute inset-0 bg-blue-400/20 animate-pulse">
-              {/* Ripple effect */}
-              {Array.from({ length: 3 }).map((_, i) => (
+              {/* Efecto de ondas */}
+              {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
                   className="absolute rounded-full bg-blue-400/30"
@@ -232,7 +209,7 @@ const GardenVisualization = ({
               ))}
             </div>
             
-            {/* Gotas de agua*/}
+            {/* Gotas de agua */}
             {Array.from({ length: Math.floor(energy / 2) }).map((_, i) => (
               <div 
                 key={i}
@@ -247,31 +224,24 @@ const GardenVisualization = ({
             ))}
             
             {/* Tooltip para energía */}
-            <div className="absolute bottom-2 left-4 garden-tooltip">
+            <div className="garden-tooltip">
               Ajustar nivel de energía
             </div>
           </div>
 
-          {/* Sistema de raíces + tronco + Copa todo integrado en centro */}
-          <div className="absolute inset-0 transform preserve-3d backface-hidden">
-            {/* Sistema de raíces */}
+          {/* Árbol central con sistema de raíces integrado */}
+          <div className="absolute left-1/2 bottom-0 transform -translate-x-1/2 preserve-3d">
+            {/* Sistema de raíces integrado */}
             <div 
-              className="absolute left-1/2 bottom-0 transform -translate-x-1/2 interactive-element"
-              style={{ 
-                width: `${rootsWidth}px`, 
-                zIndex: 10,
-                transformStyle: 'preserve-3d',
-                transform: 'rotateX(60deg) translateZ(2px)',
-                transformOrigin: 'center bottom'
-              }}
+              className="absolute left-0 bottom-0 transform rotate-x-60 origin-bottom interactive-element"
+              style={{ width: `${rootsWidth}px` }}
               onClick={() => handleElementClick('personalConcerns')}
             >
-              {/* SVG de raíces que se adapta a preocupaciones */}
               <svg 
                 width={rootsWidth} 
-                height="40" 
-                viewBox={`0 0 ${rootsWidth} 40`} 
-                className="transform origin-bottom"
+                height="50" 
+                viewBox={`0 0 ${rootsWidth} 50`} 
+                className="transform"
               >
                 <path 
                   d={`M${rootsWidth/2},0 Q${rootsWidth/2 - personalConcerns*2},15 ${rootsWidth/2 - personalConcerns*3},40 M${rootsWidth/2},0 Q${rootsWidth/2 + personalConcerns*2},15 ${rootsWidth/2 + personalConcerns*3},40`} 
@@ -280,13 +250,13 @@ const GardenVisualization = ({
                   fill="transparent"
                 />
                 <path 
-                  d={`M${rootsWidth/2},5 Q${rootsWidth/2 - personalConcerns},20 ${rootsWidth/2 - personalConcerns*1.5},40 M${rootsWidth/2},5 Q${rootsWidth/2 + personalConcerns},20 ${rootsWidth/2 + personalConcerns*1.5},40`} 
+                  d={`M${rootsWidth/2},5 Q${rootsWidth/2 - personalConcerns},20 ${rootsWidth/2 - personalConcerns*1.5},45 M${rootsWidth/2},5 Q${rootsWidth/2 + personalConcerns},20 ${rootsWidth/2 + personalConcerns*1.5},45`} 
                   stroke="#8B4513" 
                   strokeWidth="2" 
                   fill="transparent"
                 />
                 <path 
-                  d={`M${rootsWidth/2},8 Q${rootsWidth/2 - personalConcerns/2},25 ${rootsWidth/2 - personalConcerns/2},40 M${rootsWidth/2},8 Q${rootsWidth/2 + personalConcerns/2},25 ${rootsWidth/2 + personalConcerns/2},40`} 
+                  d={`M${rootsWidth/2},8 Q${rootsWidth/2 - personalConcerns/2},25 ${rootsWidth/2 - personalConcerns/2},50 M${rootsWidth/2},8 Q${rootsWidth/2 + personalConcerns/2},25 ${rootsWidth/2 + personalConcerns/2},50`} 
                   stroke="#8B4513" 
                   strokeWidth="1.5" 
                   fill="transparent"
@@ -294,28 +264,27 @@ const GardenVisualization = ({
               </svg>
               
               {/* Tooltip para raíces */}
-              <div className="garden-tooltip absolute bottom-0 left-1/2 transform -translate-x-1/2">
+              <div className="garden-tooltip">
                 Ajustar nivel de preocupaciones
               </div>
             </div>
 
-            {/* Tronco del árbol integrado en 3D */}
-            <div className="absolute left-1/2 bottom-0 transform -translate-x-1/2 preserve-3d" style={{ zIndex: 20 }}>
-              {/* Tronco */}
+            {/* Tronco del árbol */}
+            <div 
+              className="absolute bottom-0 left-1/2 transform -translate-x-1/2 interactive-element"
+              onClick={() => handleElementClick('mentalPressure')}
+            >
               <div 
-                className="interactive-element relative bg-gradient-to-t from-yellow-800 via-yellow-700 to-yellow-600 rounded-md transform backface-hidden"
+                className="relative bg-gradient-to-t from-yellow-800 via-yellow-700 to-yellow-600 rounded-md translate-z-2"
                 style={{ 
-                  width: '14px',
+                  width: '18px',
                   height: `${treeHeight + 20}px`,
-                  transformStyle: 'preserve-3d',
-                  transform: 'translateZ(2px)',
                   boxShadow: '2px 4px 6px rgba(0,0,0,0.2)'
                 }}
-                onClick={() => handleElementClick('mentalPressure')}
               >
                 {/* Textura del tronco */}
                 <div className="absolute inset-0 overflow-hidden rounded-md">
-                  {Array.from({ length: 6 }).map((_, i) => (
+                  {Array.from({ length: 8 }).map((_, i) => (
                     <div 
                       key={i} 
                       className="absolute bg-yellow-900/20 rounded-full"
@@ -323,7 +292,7 @@ const GardenVisualization = ({
                         height: '3px',
                         width: '70%',
                         left: '15%',
-                        top: `${15 + i * 15}%`,
+                        top: `${10 + i * 12}%`,
                         transform: `rotate(${i % 2 === 0 ? 2 : -2}deg)`
                       }}
                     />
@@ -331,28 +300,26 @@ const GardenVisualization = ({
                 </div>
 
                 {/* Tooltip para el tronco */}
-                <div className="garden-tooltip absolute top-1/2 -left-24 transform -translate-y-1/2">
+                <div className="garden-tooltip">
                   Ajustar presión mental
                 </div>
               </div>
 
-              {/* Copa del árbol unificada con efecto 3D */}
+              {/* Copa del árbol unificada */}
               <div 
                 className={cn(
-                  "absolute bottom-0 left-1/2 transform -translate-x-1/2 preserve-3d backface-hidden",
+                  "absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-z-3 translate-y-neg",
                   windIntensity > 7 ? "animate-[sway_1s_ease-in-out_infinite]" : 
                   windIntensity > 4 ? "animate-[sway_2s_ease-in-out_infinite]" : "",
                   isAnimating ? "animate-scale-in" : ""
                 )}
                 style={{ 
-                  transformStyle: 'preserve-3d',
                   transform: `translateZ(3px) translateY(-${treeHeight * 0.9}px)`,
-                  zIndex: 25
                 }}
               >
                 {/* Forma principal de la copa */}
                 <div 
-                  className="bg-gradient-to-b from-green-700 to-green-600 rounded-[40%] backface-hidden"
+                  className="bg-gradient-to-b from-green-700 to-green-600 rounded-[40%]"
                   style={{ 
                     width: `${treeHeight * 0.9}px`, 
                     height: `${treeHeight * 1.1}px`,
@@ -376,16 +343,16 @@ const GardenVisualization = ({
                   </div>
                 </div>
 
-                {/* Agregamos hojas para dar más profundidad */}
-                {Array.from({ length: 8 }).map((_, i) => (
+                {/* Hojas adicionales para dar profundidad */}
+                {Array.from({ length: 10 }).map((_, i) => (
                   <div 
                     key={i}
                     className={cn(
-                      "absolute transform backface-hidden",
+                      "absolute transform",
                       windIntensity > 4 ? "animate-[shake_2s_ease-in-out_infinite]" : ""
                     )}
                     style={{
-                      left: `${-20 + Math.random() * 100}%`,
+                      left: `${-20 + Math.random() * 130}%`,
                       top: `${-10 + Math.random() * 110}%`,
                       transform: `translateZ(${1 + Math.random() * 5}px) rotate(${Math.random() * 360}deg)`,
                       transformOrigin: 'center bottom',
@@ -393,7 +360,7 @@ const GardenVisualization = ({
                     }}
                   >
                     <Leaf 
-                      size={18 + Math.floor(Math.random() * 10)} 
+                      size={22 + Math.floor(Math.random() * 10)} 
                       className={cn(
                         "text-green-600",
                         i % 2 === 0 ? "fill-green-700/80" : "fill-green-600/80"
@@ -402,10 +369,10 @@ const GardenVisualization = ({
                   </div>
                 ))}
 
-                {/* Frutos (solo si es día excepcional) dentro de la copa */}
+                {/* Frutos integrados en la copa (solo si es día excepcional) */}
                 {fruitsCount > 0 && (
                   <div 
-                    className="absolute inset-0 interactive-element preserve-3d backface-hidden"
+                    className="absolute inset-0 interactive-element"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleElementClick('exceptionalDay');
@@ -430,7 +397,7 @@ const GardenVisualization = ({
                     ))}
                     
                     {/* Tooltip para día excepcional */}
-                    <div className="garden-tooltip absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <div className="garden-tooltip">
                       ¿Día excepcional?
                     </div>
                   </div>
@@ -441,36 +408,27 @@ const GardenVisualization = ({
 
           {/* Flores - representación de logros */}
           <div 
-            className="absolute inset-x-8 bottom-2 h-20 interactive-element transform preserve-3d backface-hidden"
-            style={{ 
-              transformStyle: 'preserve-3d',
-              transform: 'rotateX(60deg)',
-              transformOrigin: 'center bottom',
-              zIndex: 15
-            }}
+            className="absolute inset-x-8 bottom-2 h-20 transform rotate-x-60 origin-bottom interactive-element"
             onClick={() => handleElementClick('achievements')}
           >
             {flowersCount > 0 && (
               <>
                 {Array.from({ length: flowersCount }).map((_, i) => {
-                  // Calcular posiciones aleatorias pero consistentes
                   const leftPos = 5 + (i * 90 / flowersCount) + (Math.sin(i) * 5);
                   const heightVar = 14 + Math.floor(Math.random() * 6);
                   
                   return (
                     <div 
                       key={i}
-                      className="absolute bottom-1 transform backface-hidden"
+                      className="absolute bottom-1 transform"
                       style={{ 
                         left: `${leftPos}%`,
-                        transformStyle: 'preserve-3d',
                         transform: 'translateZ(2px)',
-                        zIndex: 15
                       }}
                     >
                       {/* Tallo */}
                       <div 
-                        className="w-1 bg-green-700 transform backface-hidden" 
+                        className="w-1 bg-green-700 transform" 
                         style={{ 
                           height: `${heightVar}px`,
                           transform: `rotate(${-5 + Math.random() * 10}deg)`,
@@ -481,10 +439,7 @@ const GardenVisualization = ({
                       
                       {/* Flor */}
                       <div 
-                        className="absolute -top-4 -left-3 flex transform backface-hidden"
-                        style={{ 
-                          transform: `translateZ(1px)`
-                        }}
+                        className="absolute -top-4 -left-3 flex transform translate-z-1"
                       >
                         <Flower 
                           size={16} 
@@ -509,58 +464,60 @@ const GardenVisualization = ({
             )}
             
             {/* Tooltip para logros */}
-            <div className="garden-tooltip absolute bottom-8 right-4 transform backface-hidden" style={{ transform: 'translateZ(4px)' }}>
+            <div className="garden-tooltip transform translate-z-4">
               Ajustar nivel de logros
             </div>
           </div>
 
-          {/* Arbustos decorativos 3D */}
-          <div className="absolute bottom-0 left-0 right-0 transform preserve-3d backface-hidden" style={{ transform: 'rotateX(60deg)', transformOrigin: 'center bottom' }}>
+          {/* Arbustos decorativos integrados */}
+          <div className="absolute bottom-0 left-0 right-0 transform rotate-x-60 origin-bottom">
             {/* Arbusto izquierdo */}
             <div 
-              className="absolute bottom-2 left-6 transform backface-hidden"
-              style={{ transform: 'translateZ(1px)' }}
+              className="absolute bottom-2 left-6 transform translate-z-1"
             >
               <TreePine 
-                size={38} 
+                size={42} 
                 className="text-green-800 fill-green-700/90 drop-shadow-md" 
               />
             </div>
             
             {/* Arbusto derecho */}
             <div 
-              className="absolute bottom-2 right-6 transform backface-hidden"
-              style={{ transform: 'translateZ(1px)' }}
+              className="absolute bottom-2 right-6 transform translate-z-1"
             >
               <TreeDeciduous 
-                size={32} 
+                size={36} 
                 className="text-green-800 fill-green-700/90 drop-shadow-md" 
               />
             </div>
           </div>
 
-          {/* Mariposas y abejas */}
+          {/* Elementos animados: mariposas y abejas */}
           {energy > 6 && (
             <>
               {/* Mariposas */}
-              {Array.from({ length: 2 }).map((_, i) => (
+              {Array.from({ length: 3 }).map((_, i) => (
                 <div 
                   key={`butterfly-${i}`}
-                  className="absolute transform preserve-3d backface-hidden"
+                  className="absolute transform"
                   style={{ 
-                    top: `${20 + i * 10}%`, 
-                    left: `${30 + i * 40}%`, 
+                    top: `${15 + i * 15}%`, 
+                    left: `${30 + i * 20}%`, 
                     animation: `fly ${8 + i * 4}s ease-in-out infinite ${i % 2 === 0 ? '' : 'alternate'}`,
                     zIndex: 40,
                     transform: 'translateZ(10px)'
                   }}
                 >
-                  <Flower 
-                    size={i % 2 === 0 ? 16 : 14} 
+                  <Butterfly 
+                    size={i % 2 === 0 ? 18 : 16} 
                     className={cn(
-                      i % 2 === 0 ? "text-purple-400" : "text-pink-400",
-                      "drop-shadow-sm"
+                      i % 3 === 0 ? "text-purple-300" : 
+                      i % 3 === 1 ? "text-pink-300" : "text-blue-300",
+                      "drop-shadow-sm animate-[pulse_2s_ease-in-out_infinite]"
                     )} 
+                    style={{
+                      animationDelay: `${i * 0.3}s`
+                    }}
                   />
                 </div>
               ))}
@@ -573,7 +530,7 @@ const GardenVisualization = ({
               {Array.from({ length: 2 }).map((_, i) => (
                 <div 
                   key={`bee-${i}`}
-                  className="absolute preserve-3d backface-hidden"
+                  className="absolute"
                   style={{ 
                     top: `${35 + i * 15}%`, 
                     left: i % 2 === 0 ? '30%' : '65%',
@@ -597,7 +554,7 @@ const GardenVisualization = ({
         </div>
       </div>
 
-      {/* Modales de interacción */}
+      {/* Modales contextuales para interacción */}
       {activeInteraction && (
         <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
           <Card className="w-full max-w-md animate-in slide-in-from-bottom-10 duration-300">
