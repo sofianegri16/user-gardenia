@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Seedling } from 'lucide-react';
+import { Sprout } from 'lucide-react';
 
 const Onboarding = () => {
   const { user, isLoading, signOut } = useAuth();
@@ -32,7 +32,7 @@ const Onboarding = () => {
           <CardHeader>
             <div className="flex justify-center mb-4">
               <div className="bg-garden-accent p-3 rounded-full">
-                <Seedling className="h-6 w-6 text-garden-dark" />
+                <Sprout className="h-6 w-6 text-garden-dark" />
               </div>
             </div>
             <CardTitle className="text-2xl text-center">Welcome to TeraGarden!</CardTitle>

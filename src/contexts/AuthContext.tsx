@@ -1,8 +1,15 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase, UserProfile, createUserProfile, getUserProfile } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+
+export type UserProfile = {
+  id: string;
+  created_at: string;
+  name?: string;
+  onboarding_complete?: boolean;
+};
 
 interface AuthContextProps {
   user: User | null;
@@ -20,6 +27,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  const getUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) throw error;
+      return data as UserProfile;
+    } catch (error: any) {
+      console.error('Error fetching user profile:', error);
+      throw error;
+    }
+  };
+
+  const createUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .insert([{ id: userId }])
+        .select();
+      
+      if (error) throw error;
+      return data[0] as UserProfile;
+    } catch (error: any) {
+      console.error('Error creating user profile:', error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     // Check for active session on mount
@@ -80,7 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleSignUp = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const { user: newUser } = await supabase.auth.signUp({ 
+      // Fix here: Update the way we access the user from the response
+      const { data, error } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
@@ -88,10 +127,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       });
 
-      if (newUser) {
+      if (error) throw error;
+      
+      if (data?.user) {
         // Create user profile
         try {
-          await createUserProfile(newUser.id);
+          await createUserProfile(data.user.id);
           toast({
             title: 'Account Created',
             description: 'Please check your email to confirm your account.',
