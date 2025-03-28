@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -28,17 +27,28 @@ export const useTeamData = () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
-      // Use the type-unsafe version of the Supabase client to query the new view
-      const { data, error } = await (supabase as any)
+      // First try to get actual team emotional data
+      const { data: actualData, error: actualError } = await (supabase as any)
         .from('team_emotional_data')
         .select('*')
         .gte('check_in_date', thirtyDaysAgo.toISOString().split('T')[0])
         .order('check_in_date', { ascending: false });
       
-      if (error) throw error;
+      if (actualError) throw actualError;
       
-      // Type cast the data to match our expected type
-      setTeamData(data as TeamEmotionalData[]);
+      // If we have actual data and it's not empty, use it
+      if (actualData && actualData.length > 0) {
+        setTeamData(actualData as TeamEmotionalData[]);
+      } else {
+        // Otherwise, use our demo data
+        const { data: demoData, error: demoError } = await (supabase as any)
+          .rpc('get_team_emotional_demo');
+        
+        if (demoError) throw demoError;
+        
+        // Type cast the data to match our expected type
+        setTeamData(demoData as TeamEmotionalData[]);
+      }
     } catch (err: any) {
       console.error('Error fetching team data:', err);
       setError(err.message || 'Failed to load team data');

@@ -142,6 +142,20 @@ export type Database = {
         }
         Relationships: []
       }
+      team_emotional_demo: {
+        Row: {
+          avg_achievements: number | null
+          avg_energy: number | null
+          avg_exceptional_day: number | null
+          avg_mental_pressure: number | null
+          avg_personal_concerns: number | null
+          check_in_date: string | null
+          member_count: number | null
+          most_common_weather: string | null
+          role: string | null
+        }
+        Relationships: []
+      }
       user_emotional_data: {
         Row: {
           achievements: number | null
@@ -162,7 +176,20 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      get_team_emotional_demo: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avg_achievements: number | null
+          avg_energy: number | null
+          avg_exceptional_day: number | null
+          avg_mental_pressure: number | null
+          avg_personal_concerns: number | null
+          check_in_date: string | null
+          member_count: number | null
+          most_common_weather: string | null
+          role: string | null
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
