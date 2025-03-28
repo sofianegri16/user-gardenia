@@ -7,13 +7,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { 
-  Tree as TreeIcon, 
+  PalmtreeIcon, 
   Flower, 
   Cloud, 
   CloudRain, 
   Sun, 
-  TreePine,
-  Bulb,
+  Trees,
+  Lightbulb,
   Heart
 } from 'lucide-react';
 
@@ -24,12 +24,12 @@ interface TeamGardenLegendProps {
 const TeamGardenLegend: React.FC<TeamGardenLegendProps> = ({ className }) => {
   const legendItems = [
     {
-      icon: <TreeIcon className="w-5 h-5 text-emerald-700" />,
+      icon: <PalmtreeIcon className="w-5 h-5 text-emerald-700" />,
       label: "Árbol Principal",
       description: "Representa la salud general del equipo. La forma y color reflejan el bienestar colectivo."
     },
     {
-      icon: <TreePine className="w-5 h-5 text-emerald-600" />,
+      icon: <Trees className="w-5 h-5 text-emerald-600" />,
       label: "Árboles Pequeños",
       description: "Cada árbol pequeño representa a un miembro del equipo, sin mostrar datos individuales."
     },
@@ -39,7 +39,7 @@ const TeamGardenLegend: React.FC<TeamGardenLegendProps> = ({ className }) => {
       description: "Representan los logros colectivos del equipo. Más flores indican más logros."
     },
     {
-      icon: <Bulb className="w-5 h-5 text-yellow-500" />,
+      icon: <Lightbulb className="w-5 h-5 text-yellow-500" />,
       label: "Energía",
       description: "Indica el nivel de energía promedio del equipo. Afecta el brillo y vivacidad del jardín."
     },
