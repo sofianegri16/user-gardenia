@@ -19,8 +19,12 @@ serve(async (req) => {
     // Get the authorization header from the request
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('No Authorization header found');
       return new Response(
-        JSON.stringify({ error: 'Unauthorized: No Authorization header' }),
+        JSON.stringify({ 
+          error: 'Unauthorized: No Authorization header',
+          errorType: 'auth'
+        }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -41,7 +45,10 @@ serve(async (req) => {
     if (userError || !user) {
       console.error('Error getting user:', userError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized: Invalid user' }),
+        JSON.stringify({ 
+          error: 'Unauthorized: Invalid user',
+          errorType: 'auth'
+        }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -55,8 +62,12 @@ serve(async (req) => {
     
     // Validate request
     if (!question) {
+      console.error('Missing required question field');
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
+        JSON.stringify({ 
+          error: 'Missing required fields',
+          errorType: 'validation'
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -118,7 +129,8 @@ serve(async (req) => {
         if (errorData.error && errorData.error.code === 'insufficient_quota') {
           return new Response(
             JSON.stringify({ 
-              error: 'El servicio de IA está temporalmente no disponible por límites de uso. Por favor, inténtalo más tarde.',
+              error: 'El servicio de IA está temporalmente no disponible debido a cuota excedida. Por favor, intenta más tarde.',
+              errorDetail: 'OpenAI API quota exceeded',
               errorType: 'quota_exceeded'
             }),
             { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -127,8 +139,8 @@ serve(async (req) => {
         
         return new Response(
           JSON.stringify({ 
-            error: 'Error al llamar a la API de OpenAI',
-            details: errorData,
+            error: `Error al llamar a la API de OpenAI: ${errorData.error?.message || 'Error desconocido'}`,
+            errorDetail: errorData,
             errorType: 'openai_api_error'
           }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -161,7 +173,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: 'Error al comunicarse con el servicio de IA', 
-          details: openAIError.message,
+          errorDetail: openAIError.message,
           errorType: 'api_call_error'
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

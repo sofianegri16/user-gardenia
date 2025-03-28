@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Send, Bot, WifiOff, AlertTriangle, TimerReset } from 'lucide-react';
+import { Send, Bot, WifiOff, AlertTriangle, TimerReset, RefreshCw } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,10 +24,12 @@ const AIAssistant = () => {
     hasError: boolean;
     message: string;
     type: string;
+    detail?: string;
   }>({
     hasError: false,
     message: '',
     type: '',
+    detail: '',
   });
   const { teamData, isLoading: isTeamDataLoading } = useTeamData();
 
@@ -36,6 +38,7 @@ const AIAssistant = () => {
       hasError: false,
       message: '',
       type: '',
+      detail: '',
     });
   };
 
@@ -95,6 +98,7 @@ const AIAssistant = () => {
         hasError: true,
         message: error.message || "No se pudo obtener una respuesta del asistente. Por favor intenta de nuevo.",
         type: error.type || "unknown",
+        detail: error.detail || "",
       });
       
       toast({
@@ -119,6 +123,9 @@ const AIAssistant = () => {
     } else if (errorState.type === 'connection') {
       icon = <WifiOff className="h-12 w-12 text-destructive/70" />;
       title = "Error de Conexión";
+    } else if (errorState.type === 'auth') {
+      icon = <AlertTriangle className="h-12 w-12 text-destructive/70" />;
+      title = "Error de Autenticación";
     }
     
     return (
@@ -126,12 +133,18 @@ const AIAssistant = () => {
         {icon}
         <h3 className="font-medium text-destructive">{title}</h3>
         <p className="text-sm text-muted-foreground">{errorState.message}</p>
+        {errorState.detail && (
+          <p className="text-xs text-muted-foreground/70 max-w-md overflow-hidden text-ellipsis">
+            Detalles: {errorState.detail}
+          </p>
+        )}
         <Button 
           variant="outline" 
           size="sm" 
           onClick={clearError}
-          className="mt-2"
+          className="mt-2 gap-2"
         >
+          <RefreshCw className="h-3 w-3" />
           Reintentar
         </Button>
       </div>

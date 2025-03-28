@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { TeamEmotionalData } from '@/types/leader';
 
@@ -19,6 +20,7 @@ export interface AskAIResponse {
 export interface AskAIError {
   message: string;
   type: 'quota' | 'connection' | 'auth' | 'unknown';
+  detail?: string;
 }
 
 /**
@@ -44,10 +46,19 @@ export const askAI = async (payload: AskAIPayload): Promise<AskAIResponse> => {
         } as AskAIError;
       }
       
+      // Handle auth errors
+      if (error.status === 401) {
+        throw {
+          message: 'No tienes autorización para usar el asistente. Por favor, inicia sesión nuevamente.',
+          type: 'auth'
+        } as AskAIError;
+      }
+      
       // Generic error
       throw {
         message: error.message || 'Error al comunicarse con el asistente virtual',
-        type: 'unknown'
+        type: 'unknown',
+        detail: error.context || ''
       } as AskAIError;
     }
 
@@ -65,28 +76,40 @@ export const askAI = async (payload: AskAIPayload): Promise<AskAIResponse> => {
       
       if (data.errorType === 'quota_exceeded') {
         throw {
-          message: 'El servicio de IA está temporalmente no disponible. Por favor, intenta más tarde.',
-          type: 'quota'
+          message: data.error || 'El servicio de IA está temporalmente no disponible debido a cuota excedida. Por favor, intenta más tarde.',
+          type: 'quota',
+          detail: data.errorDetail || ''
         } as AskAIError;
       }
       
       if (data.errorType === 'configuration_error') {
         throw {
-          message: 'Error de configuración en el servidor. Contacta al administrador.',
-          type: 'unknown'
+          message: data.error || 'Error de configuración en el servidor. Contacta al administrador.',
+          type: 'unknown',
+          detail: data.errorDetail || ''
         } as AskAIError;
       }
       
       if (data.errorType === 'openai_api_error') {
         throw {
-          message: 'Error en el servicio de IA. Por favor, intenta más tarde.',
-          type: 'unknown'
+          message: data.error || 'Error en el servicio de IA. Por favor, intenta más tarde.',
+          type: 'unknown',
+          detail: data.errorDetail || ''
+        } as AskAIError;
+      }
+
+      if (data.errorType === 'auth') {
+        throw {
+          message: data.error || 'Error de autenticación. Por favor, inicia sesión nuevamente.',
+          type: 'auth',
+          detail: data.errorDetail || ''
         } as AskAIError;
       }
       
       throw {
         message: data.error || 'Error desconocido del asistente virtual',
-        type: 'unknown'
+        type: 'unknown',
+        detail: data.errorDetail || ''
       } as AskAIError;
     }
 
@@ -110,7 +133,8 @@ export const askAI = async (payload: AskAIPayload): Promise<AskAIResponse> => {
     // Otherwise format as unknown error
     throw {
       message: error.message || 'Error inesperado al comunicarse con el asistente virtual',
-      type: 'unknown'
+      type: 'unknown',
+      detail: error.toString()
     } as AskAIError;
   }
 };
