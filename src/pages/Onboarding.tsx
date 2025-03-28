@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sprout } from 'lucide-react';
+import { Sprout, RefreshCw } from 'lucide-react';
 import WeatherEmotionSelector, { WeatherType, Emotion } from '@/components/onboarding/WeatherEmotionSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -14,10 +14,15 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [checkingEmotions, setCheckingEmotions] = useState(true);
+  const [checkFailed, setCheckFailed] = useState(false);
   
+  // This effect runs when the component mounts
   useEffect(() => {
+    console.log("🌿 Onboarding component mounted, user:", user?.id, "isLoading:", isLoading);
+    
     // If no user and not loading, redirect to login
     if (!user && !isLoading) {
+      console.log("🌿 No user in Onboarding, redirecting to login");
       navigate('/login');
     } else if (user && !isLoading) {
       console.log("🌿 user loaded in Onboarding:", user.id);
@@ -27,10 +32,16 @@ const Onboarding = () => {
 
   // Check if user already has weather emotions configured
   const checkExistingEmotions = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log("🌿 No user available for checking emotions");
+      return;
+    }
     
     try {
       setCheckingEmotions(true);
+      setCheckFailed(false);
+      
+      console.log("🌿 Checking existing emotions for user:", user.id);
       
       const { data, error } = await supabase
         .from('weather_emotions')
@@ -38,14 +49,20 @@ const Onboarding = () => {
         .eq('user_id', user.id)
         .limit(1);
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error checking weather emotions:', error);
+        setCheckFailed(true);
+        throw error;
+      }
       
-      console.log("🌿 checking existing emotions:", data);
+      console.log("🌿 Emotions check result:", data);
       
       // If user already has emotions, redirect to garden
       if (data && data.length > 0) {
         console.log("🌿 user has existing emotions, redirecting to garden");
         navigate('/garden');
+      } else {
+        console.log("🌿 No emotions found, staying on onboarding");
       }
     } catch (error) {
       console.error('Error checking weather emotions:', error);
@@ -59,12 +76,27 @@ const Onboarding = () => {
     }
   };
 
+  // Retry checking for emotions
+  const handleRetryCheck = () => {
+    checkExistingEmotions();
+  };
+
   // Save user's weather emotion selections to Supabase
   const handleEmotionComplete = async (selections: Record<WeatherType, Emotion[]>) => {
-    if (!user) return;
+    if (!user) {
+      console.error("No user found when trying to save emotions");
+      toast({
+        title: "Error",
+        description: "Usuario no encontrado. Por favor inicia sesión de nuevo.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     try {
       setSaving(true);
+      
+      console.log("🌿 Saving emotions for user:", user.id);
       
       // Delete existing weather emotions for this user
       await supabase
@@ -112,7 +144,31 @@ const Onboarding = () => {
   if (isLoading || checkingEmotions) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-garden-primary">Cargando...</div>
+        <div className="text-center">
+          <div className="animate-pulse text-garden-primary mb-4">Cargando...</div>
+          <p className="text-sm text-gray-500">Verificando tus emociones guardadas</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (checkFailed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center p-6 max-w-md">
+          <div className="text-red-500 mb-4">Error al verificar tus emociones</div>
+          <p className="text-sm text-gray-600 mb-4">
+            No pudimos verificar si ya tienes emociones guardadas. Esto puede deberse a un problema de conexión.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button onClick={handleRetryCheck} className="flex items-center">
+              <RefreshCw className="mr-2 h-4 w-4" /> Intentar de nuevo
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/garden')}>
+              Ir al jardín
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
