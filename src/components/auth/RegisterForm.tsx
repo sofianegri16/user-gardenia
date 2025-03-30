@@ -12,6 +12,7 @@ const RegisterForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { signUp } = useAuth();
@@ -22,6 +23,11 @@ const RegisterForm = () => {
     setError(null);
     
     // Basic validation
+    if (!fullName.trim()) {
+      setError('Full name is required');
+      return;
+    }
+    
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -35,8 +41,8 @@ const RegisterForm = () => {
     setIsSubmitting(true);
 
     try {
-      // The role will be automatically set to 'leader' by the database default value
-      await signUp(email, password);
+      // Pass the fullName to the signUp function
+      await signUp(email, password, fullName);
       // We'll redirect to login since they need to verify email first
       navigate('/login', { 
         state: { message: 'Please check your email to verify your account before logging in.' } 
@@ -68,6 +74,18 @@ const RegisterForm = () => {
               {error}
             </div>
           )}
+          <div className="space-y-2">
+            <Label htmlFor="fullName">Full Name</Label>
+            <Input
+              id="fullName"
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="John Doe"
+              required
+              className="input-garden"
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input

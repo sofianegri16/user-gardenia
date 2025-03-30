@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,7 +15,7 @@ interface AuthContextProps {
   profile: UserProfile | null;
   session: Session | null; // Added session to the context
   isLoading: boolean;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -143,11 +142,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [toast]);
 
-  const createUserProfile = async (userId: string) => {
+  const createUserProfile = async (userId: string, fullName?: string) => {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
-        .insert([{ id: userId }])
+        .insert([{ id: userId, name: fullName || null }])
         .select();
       
       if (error) throw error;
@@ -158,7 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const handleSignUp = async (email: string, password: string) => {
+  const handleSignUp = async (email: string, password: string, fullName?: string) => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase.auth.signUp({ 
@@ -172,9 +171,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       
       if (data?.user) {
-        // Create user profile
+        // Create user profile with fullName if provided
         try {
-          await createUserProfile(data.user.id);
+          await createUserProfile(data.user.id, fullName);
           toast({
             title: 'Account Created',
             description: 'Please check your email to confirm your account.',
@@ -186,6 +185,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             description: error.message || 'Could not create user profile.',
             variant: 'destructive',
           });
+          // Re-throw to prevent signup from being considered successful if profile creation fails
+          throw error;
         }
       }
     } catch (error: any) {

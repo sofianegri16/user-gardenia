@@ -1,16 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { EmotionalRecognition } from '@/types/leader';
-
-export interface RecognitionCategory {
-  id: string;
-  name: string;
-  plant: string;
-  emoji: string;
-}
+import { EmotionalRecognition, RecognitionCategory } from '@/types/leader';
 
 export const useEmotionalRecognitions = () => {
   const { user } = useAuth();
@@ -60,7 +52,7 @@ export const useEmotionalRecognitions = () => {
           is_read,
           recognition_date,
           category_id,
-          sender:sender_id(id, name)
+          profiles:sender_id(name)
         `)
         .eq('receiver_id', user.id)
         .order('created_at', { ascending: false });
@@ -77,7 +69,7 @@ export const useEmotionalRecognitions = () => {
         is_read: rec.is_read,
         recognition_date: rec.recognition_date,
         category_id: rec.category_id,
-        sender_name: rec.sender?.name || 'Usuario'
+        sender_name: rec.profiles?.name || 'Usuario'
       })) as EmotionalRecognition[];
       
       setReceivedRecognitions(recognitionsWithNames);
