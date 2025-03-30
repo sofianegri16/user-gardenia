@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Send, Bot, Loader2 } from 'lucide-react';
 import { askGemini } from '@/lib/askGemini';
 import { toast } from '@/hooks/use-toast';
@@ -11,7 +10,7 @@ import { useTeamData } from '@/hooks/useTeamData';
 
 const AIAssistant = () => {
   const [prompt, setPrompt] = useState('');
-  const [response, setResponse] = useState('');
+  const [response, setResponse] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const { teamData } = useTeamData();
   
@@ -28,13 +27,7 @@ const AIAssistant = () => {
       const aiResponse = await askGemini(prompt, teamData);
       
       // Make sure we're handling the response correctly
-      if (typeof aiResponse === 'string') {
-        setResponse(aiResponse);
-      } else {
-        // Handle unexpected response type
-        console.error('Unexpected response type:', aiResponse);
-        setResponse('Error: Respuesta inesperada del asistente.');
-      }
+      setResponse(aiResponse);
       
     } catch (error: any) {
       console.error('Error communicating with AI Assistant:', error);

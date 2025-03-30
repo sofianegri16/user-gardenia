@@ -8,7 +8,7 @@ import { toast } from '@/hooks/use-toast';
  * @param emotionalData - Optional emotional data to provide context
  * @returns The AI response as a string
  */
-export async function askGemini(prompt: string, emotionalData?: any) {
+export async function askGemini(prompt: string, emotionalData?: any): Promise<string> {
   try {
     console.log('Calling askGemini with prompt:', prompt);
     
@@ -21,12 +21,12 @@ export async function askGemini(prompt: string, emotionalData?: any) {
 
     if (error) {
       console.error('Error calling ask-gemini function:', error);
-      throw error;
+      return `Error: ${error.message || 'Hubo un problema conectando con el asistente IA'}`;
     }
 
     if (!data || typeof data.response !== 'string') {
       console.error('Invalid response format from ask-gemini:', data);
-      throw new Error('Invalid response format from AI');
+      return 'Error: Formato de respuesta inválido desde el asistente IA';
     }
 
     return data.response;
@@ -37,7 +37,7 @@ export async function askGemini(prompt: string, emotionalData?: any) {
       detail: error.context || {}
     });
     
-    // Return error message instead of throwing
+    // Return error message as string
     return `Lo siento, no pude procesar tu solicitud en este momento. Por favor, inténtalo de nuevo más tarde.`;
   }
 }

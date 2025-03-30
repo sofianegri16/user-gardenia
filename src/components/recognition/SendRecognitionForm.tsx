@@ -34,6 +34,8 @@ const SendRecognitionForm = () => {
       setReceiverId('');
       setMessage('');
       setCategoryId('');
+      // Force refresh team members when dialog is opened
+      refreshTeamMembers();
     }
   };
 
@@ -84,7 +86,7 @@ const SendRecognitionForm = () => {
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm text-muted-foreground">Cargando equipo...</span>
                 </div>
-              ) : teamMembers.length > 0 ? (
+              ) : teamMembers && teamMembers.length > 0 ? (
                 <Select value={receiverId} onValueChange={setReceiverId}>
                   <SelectTrigger id="recipient" className="bg-background">
                     <SelectValue placeholder="Selecciona una persona" />

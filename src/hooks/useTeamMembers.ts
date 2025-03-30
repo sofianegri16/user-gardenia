@@ -30,7 +30,8 @@ export const useTeamMembers = () => {
       const { data: userTeams, error: teamError } = await supabase
         .from('team_members')
         .select('team_id')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .limit(1);
       
       if (teamError) {
         console.error('Error fetching user teams:', teamError);
@@ -78,6 +79,13 @@ export const useTeamMembers = () => {
       const memberIds = teamMemberIds.map(m => m.user_id);
       console.log('DEBUGGING STEP 2: Team member ids:', memberIds);
       
+      if (memberIds.length === 0) {
+        console.log('Member IDs array is empty after mapping');
+        setTeamMembers([]);
+        setIsLoading(false);
+        return;
+      }
+      
       // STEP 3: Get the profiles of all team members
       const { data: profiles, error: profilesError } = await supabase
         .from('user_profiles')
@@ -93,7 +101,7 @@ export const useTeamMembers = () => {
       console.log('DEBUGGING STEP 3: Team member profiles:', profiles);
       
       if (!profiles || profiles.length === 0) {
-        console.log('No team member profiles found');
+        console.log('No team member profiles found even though we had IDs');
         setTeamMembers([]);
       } else {
         const formattedMembers: TeamMember[] = profiles.map(profile => ({
@@ -119,9 +127,12 @@ export const useTeamMembers = () => {
     }
   }, [user]);
   
+  // Execute fetch on mount and when user changes
   useEffect(() => {
     if (user) {
       fetchTeamMembers();
+    } else {
+      setTeamMembers([]);
     }
   }, [user, fetchTeamMembers]);
   
