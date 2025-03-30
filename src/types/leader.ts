@@ -23,6 +23,8 @@ export interface EmotionalRecognition {
   recognition_date: string;
   category_id?: string;
   sender_name?: string;
+  receiver_name?: string;
+  category?: RecognitionCategory | null;
 }
 
 export interface RecognitionCategory {
