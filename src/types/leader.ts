@@ -21,5 +21,13 @@ export interface EmotionalRecognition {
   created_at: string;
   is_read: boolean;
   recognition_date: string;
+  category_id?: string;
   sender_name?: string;
+}
+
+export interface RecognitionCategory {
+  id: string;
+  name: string;
+  plant: string;
+  emoji: string;
 }

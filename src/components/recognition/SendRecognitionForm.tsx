@@ -2,11 +2,10 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { AppleIcon, Loader2 } from 'lucide-react';
+import { AppleIcon, Loader2, RadioTower } from 'lucide-react';
 import { useTeamMembers, TeamMember } from '@/hooks/useTeamMembers';
 import { useEmotionalRecognitions } from '@/hooks/useEmotionalRecognitions';
 
@@ -14,22 +13,24 @@ const SendRecognitionForm = () => {
   const [open, setOpen] = useState(false);
   const [receiverId, setReceiverId] = useState<string>('');
   const [message, setMessage] = useState<string>('');
+  const [categoryId, setCategoryId] = useState<string>('');
   const [isSending, setIsSending] = useState(false);
   
   const { teamMembers, isLoading: isLoadingMembers } = useTeamMembers();
-  const { sendRecognition } = useEmotionalRecognitions();
+  const { sendRecognition, categories, isCategoriesLoading } = useEmotionalRecognitions();
   
   const handleSendRecognition = async () => {
-    if (!receiverId || !message) return;
+    if (!receiverId || !message || !categoryId) return;
     
     setIsSending(true);
     
     try {
-      const success = await sendRecognition(receiverId, message);
+      const success = await sendRecognition(receiverId, message, categoryId);
       if (success) {
         setOpen(false);
         setReceiverId('');
         setMessage('');
+        setCategoryId('');
       }
     } finally {
       setIsSending(false);
@@ -81,6 +82,37 @@ const SendRecognitionForm = () => {
               )}
             </div>
           </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="category" className="text-right">
+              Categoría
+            </Label>
+            <div className="col-span-3">
+              {isCategoriesLoading ? (
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm text-muted-foreground">Cargando categorías...</span>
+                </div>
+              ) : (
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Selecciona una categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        <span className="flex items-center gap-2">
+                          <span role="img" aria-label={category.name}>{category.emoji}</span>
+                          <span>{category.name}</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          </div>
+          
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="message" className="text-right">
               Mensaje
@@ -99,7 +131,7 @@ const SendRecognitionForm = () => {
           <Button 
             type="submit" 
             onClick={handleSendRecognition}
-            disabled={!receiverId || !message || isSending}
+            disabled={!receiverId || !message || !categoryId || isSending}
           >
             {isSending ? (
               <>

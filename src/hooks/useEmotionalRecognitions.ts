@@ -5,11 +5,43 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { EmotionalRecognition } from '@/types/leader';
 
+export interface RecognitionCategory {
+  id: string;
+  name: string;
+  plant: string;
+  emoji: string;
+}
+
 export const useEmotionalRecognitions = () => {
   const { user } = useAuth();
   const [receivedRecognitions, setReceivedRecognitions] = useState<EmotionalRecognition[]>([]);
+  const [categories, setCategories] = useState<RecognitionCategory[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
+  
+  const fetchCategories = async () => {
+    try {
+      setIsCategoriesLoading(true);
+      
+      const { data, error } = await supabase
+        .from('recognition_categories')
+        .select('*');
+      
+      if (error) throw error;
+      
+      setCategories(data as RecognitionCategory[]);
+    } catch (error: any) {
+      console.error('Error fetching recognition categories:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron cargar las categorías de reconocimiento',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsCategoriesLoading(false);
+    }
+  };
   
   const fetchRecognitions = async () => {
     if (!user) return;
@@ -27,6 +59,7 @@ export const useEmotionalRecognitions = () => {
           created_at,
           is_read,
           recognition_date,
+          category_id,
           sender:sender_id(id, name)
         `)
         .eq('receiver_id', user.id)
@@ -43,6 +76,7 @@ export const useEmotionalRecognitions = () => {
         created_at: rec.created_at,
         is_read: rec.is_read,
         recognition_date: rec.recognition_date,
+        category_id: rec.category_id,
         sender_name: rec.sender?.name || 'Usuario'
       })) as EmotionalRecognition[];
       
@@ -60,7 +94,7 @@ export const useEmotionalRecognitions = () => {
     }
   };
   
-  const sendRecognition = async (receiverId: string, message: string) => {
+  const sendRecognition = async (receiverId: string, message: string, categoryId: string) => {
     if (!user) return false;
     
     try {
@@ -70,6 +104,7 @@ export const useEmotionalRecognitions = () => {
           sender_id: user.id,
           receiver_id: receiverId,
           message,
+          category_id: categoryId,
           recognition_date: new Date().toISOString().split('T')[0],
           is_read: false
         });
@@ -133,6 +168,7 @@ export const useEmotionalRecognitions = () => {
   };
   
   useEffect(() => {
+    fetchCategories();
     if (user) {
       fetchRecognitions();
     }
@@ -140,8 +176,10 @@ export const useEmotionalRecognitions = () => {
   
   return {
     receivedRecognitions,
+    categories,
     unreadCount,
     isLoading,
+    isCategoriesLoading,
     sendRecognition,
     markAsRead,
     refreshRecognitions: fetchRecognitions

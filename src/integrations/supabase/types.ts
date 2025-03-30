@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       emotional_recognitions: {
         Row: {
+          category_id: string | null
           created_at: string
           id: string
           is_read: boolean
@@ -20,6 +21,7 @@ export type Database = {
           sender_id: string
         }
         Insert: {
+          category_id?: string | null
           created_at?: string
           id?: string
           is_read?: boolean
@@ -29,6 +31,7 @@ export type Database = {
           sender_id: string
         }
         Update: {
+          category_id?: string | null
           created_at?: string
           id?: string
           is_read?: boolean
@@ -38,6 +41,13 @@ export type Database = {
           sender_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "emotional_recognitions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "recognition_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_receiver_profile"
             columns: ["receiver_id"]
@@ -123,6 +133,27 @@ export type Database = {
         }
         Relationships: []
       }
+      recognition_categories: {
+        Row: {
+          emoji: string
+          id: string
+          name: string
+          plant: string
+        }
+        Insert: {
+          emoji: string
+          id: string
+          name: string
+          plant: string
+        }
+        Update: {
+          emoji?: string
+          id?: string
+          name?: string
+          plant?: string
+        }
+        Relationships: []
+      }
       recognitions: {
         Row: {
           created_at: string | null
@@ -144,6 +175,57 @@ export type Database = {
           message?: string
           receiver_id?: string
           sender_id?: string
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          created_at: string | null
+          id: string
+          team_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          team_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          team_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
         }
         Relationships: []
       }
