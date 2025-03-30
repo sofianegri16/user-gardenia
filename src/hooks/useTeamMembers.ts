@@ -26,49 +26,76 @@ export const useTeamMembers = () => {
       
       console.log('Fetching team for user:', user.id);
       
-      // Consulta optimizada usando JOIN para obtener los miembros del equipo
-      const { data: members, error } = await supabase
+      // First, get the user's team_id
+      const { data: userTeam, error: teamError } = await supabase
         .from('team_members')
-        .select(`
-          user_profiles:user_id (
-            id,
-            name,
-            role
-          )
-        `)
-        .eq('team_id', (
-          supabase
-            .from('team_members')
-            .select('team_id')
-            .eq('user_id', user.id)
-            .limit(1)
-        ))
-        .neq('user_id', user.id);
+        .select('team_id')
+        .eq('user_id', user.id)
+        .single();
       
-      if (error) {
-        console.error('Error fetching team members:', error);
-        throw error;
+      if (teamError) {
+        console.error('Error fetching user team:', teamError);
+        throw teamError;
       }
       
-      console.log('Raw team members data:', members);
-      
-      if (!members || members.length === 0) {
-        console.log('No team members found for user:', user.id);
+      if (!userTeam || !userTeam.team_id) {
+        console.log('User not assigned to any team');
         setTeamMembers([]);
+        setIsLoading(false);
         return;
       }
       
-      // Procesar los resultados para extraer los perfiles de usuario
-      const formattedMembers = members
-        .filter(member => member.user_profiles)
-        .map(member => ({
-          id: member.user_profiles.id,
-          name: member.user_profiles.name || 'Usuario sin nombre',
-          role: member.user_profiles.role || 'user'
-        }));
+      console.log('User belongs to team:', userTeam.team_id);
       
-      console.log('Processed team members:', formattedMembers);
-      setTeamMembers(formattedMembers);
+      // Then, get all team members except current user
+      const { data: teamMemberIds, error: membersError } = await supabase
+        .from('team_members')
+        .select('user_id')
+        .eq('team_id', userTeam.team_id)
+        .neq('user_id', user.id);
+      
+      if (membersError) {
+        console.error('Error fetching team member ids:', membersError);
+        throw membersError;
+      }
+      
+      if (!teamMemberIds || teamMemberIds.length === 0) {
+        console.log('No other team members found');
+        setTeamMembers([]);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Extract user_ids from team_members
+      const memberIds = teamMemberIds.map(m => m.user_id);
+      console.log('Team member ids:', memberIds);
+      
+      // Finally, get the profiles of all team members
+      const { data: profiles, error: profilesError } = await supabase
+        .from('user_profiles')
+        .select('id, name, role')
+        .in('id', memberIds);
+      
+      if (profilesError) {
+        console.error('Error fetching member profiles:', profilesError);
+        throw profilesError;
+      }
+      
+      console.log('Team member profiles:', profiles);
+      
+      if (!profiles || profiles.length === 0) {
+        console.log('No team member profiles found');
+        setTeamMembers([]);
+      } else {
+        const formattedMembers: TeamMember[] = profiles.map(profile => ({
+          id: profile.id,
+          name: profile.name || 'Usuario sin nombre',
+          role: profile.role || 'user'
+        }));
+        
+        console.log('Formatted team members:', formattedMembers);
+        setTeamMembers(formattedMembers);
+      }
       
     } catch (error: any) {
       console.error('Error fetching team members:', error);

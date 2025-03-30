@@ -19,7 +19,7 @@ const SendRecognitionForm = () => {
   const { teamMembers, isLoading: isLoadingMembers, refreshTeamMembers } = useTeamMembers();
   const { sendRecognition, categories, isCategoriesLoading } = useEmotionalRecognitions();
   
-  // Refrescar la lista de miembros del equipo cuando se abre el dialog
+  // Refresh team members list when dialog opens
   useEffect(() => {
     if (open) {
       refreshTeamMembers();
@@ -29,11 +29,10 @@ const SendRecognitionForm = () => {
   const handleOpenChange = (open: boolean) => {
     setOpen(open);
     if (open) {
-      // Limpiar el formulario cuando se abre
+      // Clear form when opening
       setReceiverId('');
       setMessage('');
       setCategoryId('');
-      // El refresh se maneja en el useEffect
     }
   };
 
