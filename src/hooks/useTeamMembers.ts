@@ -21,23 +21,66 @@ export const useTeamMembers = () => {
     try {
       setIsLoading(true);
       
-      // Get all user profiles except the current user
-      // Use type assertion to bypass strict TypeScript checks since the database structure
-      // might not match our types exactly (role column may not exist yet)
-      const { data, error } = await (supabase as any)
+      // Step 1: Get the user's team_id
+      console.log('Fetching team for user:', user.id);
+      const { data: userTeamData, error: userTeamError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (userTeamError) {
+        if (userTeamError.code === 'PGRST116') {
+          // No team found for this user
+          console.log('No team found for user:', user.id);
+          setTeamMembers([]);
+          return;
+        }
+        throw userTeamError;
+      }
+
+      if (!userTeamData || !userTeamData.team_id) {
+        console.log('User is not part of any team:', user.id);
+        setTeamMembers([]);
+        return;
+      }
+
+      const teamId = userTeamData.team_id;
+      console.log('User belongs to team:', teamId);
+
+      // Step 2: Get all users in the same team
+      const { data: teamMembersIds, error: teamMembersError } = await supabase
+        .from('team_members')
+        .select('user_id')
+        .eq('team_id', teamId)
+        .neq('user_id', user.id); // Exclude the current user
+      
+      if (teamMembersError) throw teamMembersError;
+      
+      if (!teamMembersIds || teamMembersIds.length === 0) {
+        console.log('No other members found in team:', teamId);
+        setTeamMembers([]);
+        return;
+      }
+
+      const memberIds = teamMembersIds.map(member => member.user_id);
+      console.log('Team member IDs found:', memberIds.length);
+
+      // Step 3: Get the profiles for those team members
+      const { data: membersData, error: profilesError } = await supabase
         .from('user_profiles')
-        .select('id, name')
-        .neq('id', user.id); // Exclude current user
+        .select('id, name, role')
+        .in('id', memberIds);
       
-      if (error) throw error;
+      if (profilesError) throw profilesError;
       
-      // Transform the data to include a default role if missing
-      const members = data.map((user: any) => ({
-        id: user.id || '',
-        name: user.name || 'Usuario',
-        role: 'user' // Default role if not available in the database
+      const members: TeamMember[] = membersData.map((profile: any) => ({
+        id: profile.id || '',
+        name: profile.name || 'Usuario',
+        role: profile.role || 'user'
       }));
       
+      console.log('Team members loaded:', members.length);
       setTeamMembers(members);
     } catch (error: any) {
       console.error('Error fetching team members:', error);

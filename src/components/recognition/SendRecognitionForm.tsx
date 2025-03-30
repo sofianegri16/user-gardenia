@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { AppleIcon, Loader2, RadioTower } from 'lucide-react';
+import { AppleIcon, Loader2 } from 'lucide-react';
 import { useTeamMembers, TeamMember } from '@/hooks/useTeamMembers';
 import { useEmotionalRecognitions } from '@/hooks/useEmotionalRecognitions';
 
@@ -66,7 +66,7 @@ const SendRecognitionForm = () => {
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm text-muted-foreground">Cargando equipo...</span>
                 </div>
-              ) : (
+              ) : teamMembers.length > 0 ? (
                 <Select value={receiverId} onValueChange={setReceiverId}>
                   <SelectTrigger id="recipient">
                     <SelectValue placeholder="Selecciona una persona" />
@@ -79,6 +79,10 @@ const SendRecognitionForm = () => {
                     ))}
                   </SelectContent>
                 </Select>
+              ) : (
+                <div className="p-2 text-sm text-muted-foreground border border-dashed rounded-md bg-muted/50">
+                  No hay compañeros en tu equipo disponibles para reconocimiento todavía.
+                </div>
               )}
             </div>
           </div>
@@ -131,7 +135,7 @@ const SendRecognitionForm = () => {
           <Button 
             type="submit" 
             onClick={handleSendRecognition}
-            disabled={!receiverId || !message || !categoryId || isSending}
+            disabled={!receiverId || !message || !categoryId || isSending || teamMembers.length === 0}
           >
             {isSending ? (
               <>
