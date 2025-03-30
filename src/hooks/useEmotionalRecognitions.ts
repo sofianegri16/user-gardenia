@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +8,7 @@ import { EmotionalRecognition, RecognitionCategory } from '@/types/leader';
 export const useEmotionalRecognitions = () => {
   const { user } = useAuth();
   const [receivedRecognitions, setReceivedRecognitions] = useState<EmotionalRecognition[]>([]);
+  const [sentRecognitions, setSentRecognitions] = useState<EmotionalRecognition[]>([]);
   const [categories, setCategories] = useState<RecognitionCategory[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,6 +24,7 @@ export const useEmotionalRecognitions = () => {
       
       if (error) throw error;
       
+      console.log('Categories fetched:', data);
       setCategories(data as RecognitionCategory[]);
     } catch (error: any) {
       console.error('Error fetching recognition categories:', error);
@@ -36,13 +38,15 @@ export const useEmotionalRecognitions = () => {
     }
   };
   
-  const fetchRecognitions = async () => {
+  const fetchRecognitions = useCallback(async () => {
     if (!user) return;
     
     try {
       setIsLoading(true);
+      console.log('Fetching recognitions for user:', user.id);
       
-      const { data, error } = await supabase
+      // Fetch received recognitions
+      const { data: receivedData, error: receivedError } = await supabase
         .from('emotional_recognitions')
         .select(`
           id,
@@ -53,15 +57,21 @@ export const useEmotionalRecognitions = () => {
           is_read,
           recognition_date,
           category_id,
-          profiles:sender_id(name)
+          profiles:sender_id(id, name),
+          categories:category_id(id, name, emoji)
         `)
         .eq('receiver_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (receivedError) {
+        console.error('Error fetching received recognitions:', receivedError);
+        throw receivedError;
+      }
       
-      // Transform data to include sender name
-      const recognitionsWithNames = data.map((rec: any) => ({
+      console.log('Received recognitions raw data:', receivedData);
+      
+      // Transform data to include sender name and category info
+      const receivedWithNames = receivedData?.map((rec: any) => ({
         id: rec.id,
         sender_id: rec.sender_id,
         receiver_id: rec.receiver_id,
@@ -70,11 +80,56 @@ export const useEmotionalRecognitions = () => {
         is_read: rec.is_read,
         recognition_date: rec.recognition_date,
         category_id: rec.category_id,
-        sender_name: rec.profiles?.name || 'Usuario'
-      })) as EmotionalRecognition[];
+        sender_name: rec.profiles?.name || 'Usuario',
+        category: rec.categories || null
+      })) || [];
       
-      setReceivedRecognitions(recognitionsWithNames);
-      setUnreadCount(recognitionsWithNames.filter(r => !r.is_read).length);
+      console.log('Processed received recognitions:', receivedWithNames);
+      setReceivedRecognitions(receivedWithNames);
+      setUnreadCount(receivedWithNames.filter(r => !r.is_read).length);
+      
+      // Fetch sent recognitions
+      const { data: sentData, error: sentError } = await supabase
+        .from('emotional_recognitions')
+        .select(`
+          id,
+          sender_id,
+          receiver_id,
+          message,
+          created_at,
+          is_read,
+          recognition_date,
+          category_id,
+          profiles:receiver_id(id, name),
+          categories:category_id(id, name, emoji)
+        `)
+        .eq('sender_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (sentError) {
+        console.error('Error fetching sent recognitions:', sentError);
+        throw sentError;
+      }
+      
+      console.log('Sent recognitions raw data:', sentData);
+      
+      // Transform data to include receiver name
+      const sentWithNames = sentData?.map((rec: any) => ({
+        id: rec.id,
+        sender_id: rec.sender_id,
+        receiver_id: rec.receiver_id,
+        message: rec.message,
+        created_at: rec.created_at,
+        is_read: rec.is_read,
+        recognition_date: rec.recognition_date,
+        category_id: rec.category_id,
+        receiver_name: rec.profiles?.name || 'Usuario',
+        category: rec.categories || null
+      })) || [];
+      
+      console.log('Processed sent recognitions:', sentWithNames);
+      setSentRecognitions(sentWithNames);
+      
     } catch (error: any) {
       console.error('Error fetching recognitions:', error);
       toast({
@@ -85,7 +140,7 @@ export const useEmotionalRecognitions = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
   
   const sendRecognition = async (receiverId: string, message: string, categoryId: string) => {
     if (!user) return false;
@@ -119,6 +174,9 @@ export const useEmotionalRecognitions = () => {
         title: 'Reconocimiento enviado',
         description: 'Tu mensaje de reconocimiento ha sido enviado correctamente',
       });
+      
+      // Refresh the recognitions list
+      fetchRecognitions();
       
       return true;
     } catch (error: any) {
@@ -162,13 +220,17 @@ export const useEmotionalRecognitions = () => {
   
   useEffect(() => {
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
     if (user) {
       fetchRecognitions();
     }
-  }, [user]);
+  }, [user, fetchRecognitions]);
   
   return {
     receivedRecognitions,
+    sentRecognitions,
     categories,
     unreadCount,
     isLoading,
