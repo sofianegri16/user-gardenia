@@ -11,13 +11,21 @@ import { toast } from '@/hooks/use-toast';
 export async function askGemini(prompt: string, emotionalData?: any): Promise<string> {
   try {
     console.log('Calling askGemini with prompt:', prompt);
+    console.log('Emotional data being sent:', emotionalData);
+    
+    if (!prompt || prompt.trim() === '') {
+      console.error('Empty prompt provided to askGemini');
+      return 'Error: Se requiere una pregunta para el asistente';
+    }
     
     const { data, error } = await supabase.functions.invoke('ask-gemini', {
       body: {
-        prompt: prompt,
-        emotionalData: emotionalData || null
+        question: prompt.trim(),
+        team_state: emotionalData || null
       }
     });
+
+    console.log('Response received from ask-gemini:', data);
 
     if (error) {
       console.error('Error calling ask-gemini function:', error);

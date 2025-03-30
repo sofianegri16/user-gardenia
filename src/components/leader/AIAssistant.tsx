@@ -17,16 +17,36 @@ const AIAssistant = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!prompt.trim()) return;
+    if (!prompt.trim()) {
+      toast({
+        title: 'Entrada vacía',
+        description: 'Por favor, escribe una pregunta para el asistente.',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     try {
       setIsLoading(true);
       setResponse('');
       
-      // Pass team emotional data for context if available
-      const aiResponse = await askGemini(prompt, teamData);
+      // Preparar datos del equipo para contexto
+      const teamStateData = teamData.length > 0 ? {
+        energy_avg: teamData.reduce((acc, data) => acc + (data.energy_level || 0), 0) / teamData.length,
+        pressure_avg: teamData.reduce((acc, data) => acc + (data.pressure_level || 0), 0) / teamData.length,
+        climate_trend: teamData.some(d => d.mood === 'positive') ? 'positiva' : 'neutral',
+        recent_alerts: teamData
+          .filter(d => d.concerns && d.concerns.length > 0)
+          .flatMap(d => d.concerns || [])
+      } : null;
       
-      // Make sure we're handling the response correctly
+      console.log('Sending prompt to Gemini:', prompt);
+      console.log('Team state data:', teamStateData);
+      
+      // Llamar a askGemini con la pregunta y los datos del equipo
+      const aiResponse = await askGemini(prompt, teamStateData);
+      
+      console.log('Response from Gemini:', aiResponse);
       setResponse(aiResponse);
       
     } catch (error: any) {
