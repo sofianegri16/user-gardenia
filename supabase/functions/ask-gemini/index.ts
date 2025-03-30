@@ -102,7 +102,7 @@ serve(async (req) => {
     const startTime = Date.now();
     
     try {
-      // Call Gemini API with the corrected endpoint and payload format
+      // Call Gemini API with the correct endpoint (v1beta) and format
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
         method: 'POST',
         headers: {
@@ -142,7 +142,7 @@ serve(async (req) => {
       
       const data = await response.json();
       
-      // Extract the answer from Gemini response (using the correct response structure)
+      // Extract the answer from Gemini response using the correct response structure
       const answer = data.candidates && 
                      data.candidates[0] && 
                      data.candidates[0].content && 
