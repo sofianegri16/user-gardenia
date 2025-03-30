@@ -29,11 +29,23 @@ export async function askGemini(prompt: string, emotionalData?: any): Promise<st
 
     if (error) {
       console.error('Error calling ask-gemini function:', error);
+      
+      // Mostrar mensaje más detallado si hay un error específico de Gemini
+      if (error.message && error.message.includes('Gemini')) {
+        return `Error API Gemini: ${error.message}`;
+      }
+      
       return `Error: ${error.message || 'Hubo un problema conectando con el asistente IA'}`;
     }
 
     if (!data || typeof data.answer !== 'string') {
       console.error('Invalid response format from ask-gemini:', data);
+      
+      // Si hay un mensaje de error detallado en la respuesta, mostrarlo
+      if (data && data.error) {
+        return `Error: ${data.error}`;
+      }
+      
       return 'Error: Formato de respuesta inválido desde el asistente IA';
     }
 
@@ -45,7 +57,7 @@ export async function askGemini(prompt: string, emotionalData?: any): Promise<st
       detail: error.context || {}
     });
     
-    // Return error message as string
-    return `Lo siento, no pude procesar tu solicitud en este momento. Por favor, inténtalo de nuevo más tarde.`;
+    // Return error message as string with more details if available
+    return `Lo siento, no pude procesar tu solicitud en este momento. ${error.message ? `Error: ${error.message}` : 'Por favor, inténtalo de nuevo más tarde.'}`;
   }
 }

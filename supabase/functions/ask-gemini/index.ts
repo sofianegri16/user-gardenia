@@ -73,7 +73,7 @@ serve(async (req) => {
     }
     
     // Get Gemini API key from environment
-    const geminiApiKey = "AIzaSyBCkzEJ1w8TjKK_CvYntiAA7WXesNv9BqU"; // Using the provided API key
+    const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     if (!geminiApiKey) {
       console.error('Gemini API key is not configured');
       return new Response(
@@ -95,13 +95,15 @@ serve(async (req) => {
     - Nivel de energía promedio: ${team_state?.energy_avg || 'No disponible'}
     - Nivel de presión mental promedio: ${team_state?.pressure_avg || 'No disponible'}
     - Tendencia del clima emocional: ${team_state?.climate_trend || 'No disponible'}
-    - Alertas recientes: ${team_state?.recent_alerts ? team_state.recent_alerts.join(', ') : 'Ninguna'}`;
+    - Alertas recientes: ${team_state?.recent_alerts ? team_state.recent_alerts.join(', ') : 'Ninguna'}
+    
+    ${question}`;
 
     const startTime = Date.now();
     
     try {
-      // Call Gemini API
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
+      // Call Gemini API with the corrected endpoint and payload format
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,10 +111,8 @@ serve(async (req) => {
         body: JSON.stringify({
           contents: [
             {
-              role: "user",
               parts: [
-                { text: systemPrompt },
-                { text: question }
+                { text: systemPrompt }
               ]
             }
           ],
@@ -130,7 +130,6 @@ serve(async (req) => {
         const errorData = await response.json();
         console.error('Gemini API error:', errorData);
         
-        // Generic API error
         return new Response(
           JSON.stringify({ 
             error: `Error al llamar a la API de Gemini: ${errorData.error?.message || 'Error desconocido'}`,
@@ -143,7 +142,7 @@ serve(async (req) => {
       
       const data = await response.json();
       
-      // Extract the answer from Gemini response
+      // Extract the answer from Gemini response (using the correct response structure)
       const answer = data.candidates && 
                      data.candidates[0] && 
                      data.candidates[0].content && 
