@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -177,3 +178,6 @@ export const useEmotionalRecognitions = () => {
     refreshRecognitions: fetchRecognitions
   };
 };
+
+// Directly re-export the type from the types file for convenience
+export type { RecognitionCategory } from '@/types/leader';

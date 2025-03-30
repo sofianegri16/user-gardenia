@@ -1,12 +1,12 @@
 
 import React, { useState, useMemo } from 'react';
-import { useEmotionalRecognitions, RecognitionCategory } from '@/hooks/useEmotionalRecognitions';
+import { useEmotionalRecognitions } from '@/hooks/useEmotionalRecognitions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, AppleIcon } from 'lucide-react';
-import { EmotionalRecognition } from '@/types/leader';
+import { EmotionalRecognition, RecognitionCategory } from '@/types/leader';
 
 const RecognitionsReceived = () => {
   const { receivedRecognitions, categories, unreadCount, isLoading, markAsRead } = useEmotionalRecognitions();
