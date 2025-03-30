@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { AppleIcon, Loader2 } from 'lucide-react';
+import { AppleIcon, Loader2, Users } from 'lucide-react';
 import { useTeamMembers, TeamMember } from '@/hooks/useTeamMembers';
 import { useEmotionalRecognitions } from '@/hooks/useEmotionalRecognitions';
 
@@ -97,8 +97,9 @@ const SendRecognitionForm = () => {
                   </SelectContent>
                 </Select>
               ) : (
-                <div className="p-2 text-sm text-muted-foreground border border-dashed rounded-md bg-muted/50">
-                  No hay compañeros en tu equipo disponibles para reconocimiento todavía.
+                <div className="p-2 text-sm text-muted-foreground border border-dashed rounded-md bg-muted/50 flex items-center gap-2 justify-center">
+                  <Users className="h-4 w-4" />
+                  <span>No hay compañeros en tu equipo disponibles para reconocimiento.</span>
                 </div>
               )}
             </div>

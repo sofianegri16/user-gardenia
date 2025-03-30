@@ -26,32 +26,40 @@ export const useTeamMembers = () => {
       
       console.log('Fetching team for user:', user.id);
       
-      // First, get the user's team_id
-      const { data: userTeam, error: teamError } = await supabase
+      // First, get the user's team_id - using maybeSingle() to avoid errors with multiple teams
+      const { data: userTeams, error: teamError } = await supabase
         .from('team_members')
         .select('team_id')
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', user.id);
       
       if (teamError) {
-        console.error('Error fetching user team:', teamError);
+        console.error('Error fetching user teams:', teamError);
         throw teamError;
       }
       
-      if (!userTeam || !userTeam.team_id) {
+      if (!userTeams || userTeams.length === 0) {
         console.log('User not assigned to any team');
         setTeamMembers([]);
         setIsLoading(false);
         return;
       }
       
-      console.log('User belongs to team:', userTeam.team_id);
+      // Use the first team_id found (in case user is in multiple teams)
+      const teamId = userTeams[0].team_id;
+      console.log('User belongs to team:', teamId);
+      
+      if (!teamId) {
+        console.log('Team ID is undefined');
+        setTeamMembers([]);
+        setIsLoading(false);
+        return;
+      }
       
       // Then, get all team members except current user
       const { data: teamMemberIds, error: membersError } = await supabase
         .from('team_members')
         .select('user_id')
-        .eq('team_id', userTeam.team_id)
+        .eq('team_id', teamId)
         .neq('user_id', user.id);
       
       if (membersError) {
