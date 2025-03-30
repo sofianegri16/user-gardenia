@@ -32,6 +32,7 @@ export const fetchRecognitionCategories = async (): Promise<RecognitionCategory[
  */
 export const fetchReceivedRecognitions = async (userId: string): Promise<EmotionalRecognition[]> => {
   try {
+    // Using the explicit relationship names from the error message (fk_sender)
     const { data, error } = await supabase
       .from('emotional_recognitions')
       .select(`
@@ -43,8 +44,8 @@ export const fetchReceivedRecognitions = async (userId: string): Promise<Emotion
         is_read,
         recognition_date,
         category_id,
-        profiles:sender_id(id, name),
-        categories:category_id(id, name, emoji)
+        user_profiles!fk_sender(id, name),
+        categories:recognition_categories(id, name, emoji)
       `)
       .eq('receiver_id', userId)
       .order('created_at', { ascending: false });
@@ -66,7 +67,7 @@ export const fetchReceivedRecognitions = async (userId: string): Promise<Emotion
       is_read: rec.is_read,
       recognition_date: rec.recognition_date,
       category_id: rec.category_id,
-      sender_name: rec.profiles?.name || 'Usuario',
+      sender_name: rec.user_profiles?.name || 'Usuario',
       category: rec.categories || null
     })) || [];
     
@@ -83,6 +84,7 @@ export const fetchReceivedRecognitions = async (userId: string): Promise<Emotion
  */
 export const fetchSentRecognitions = async (userId: string): Promise<EmotionalRecognition[]> => {
   try {
+    // Using the explicit relationship names from the error message (fk_receiver)
     const { data, error } = await supabase
       .from('emotional_recognitions')
       .select(`
@@ -94,8 +96,8 @@ export const fetchSentRecognitions = async (userId: string): Promise<EmotionalRe
         is_read,
         recognition_date,
         category_id,
-        profiles:receiver_id(id, name),
-        categories:category_id(id, name, emoji)
+        user_profiles!fk_receiver(id, name),
+        categories:recognition_categories(id, name, emoji)
       `)
       .eq('sender_id', userId)
       .order('created_at', { ascending: false });
@@ -117,7 +119,7 @@ export const fetchSentRecognitions = async (userId: string): Promise<EmotionalRe
       is_read: rec.is_read,
       recognition_date: rec.recognition_date,
       category_id: rec.category_id,
-      receiver_name: rec.profiles?.name || 'Usuario',
+      receiver_name: rec.user_profiles?.name || 'Usuario',
       category: rec.categories || null
     })) || [];
     

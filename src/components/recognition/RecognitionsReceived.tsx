@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, AppleIcon, RefreshCw } from 'lucide-react';
+import { Loader2, AppleIcon, RefreshCw, AlertTriangle } from 'lucide-react';
 import { EmotionalRecognition, RecognitionCategory } from '@/types/leader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const RecognitionsReceived = () => {
   const { 
@@ -15,7 +16,8 @@ const RecognitionsReceived = () => {
     sentRecognitions, 
     categories, 
     unreadCount, 
-    isLoading, 
+    isLoading,
+    error,
     markAsRead, 
     refreshRecognitions 
   } = useEmotionalRecognitions();
@@ -47,7 +49,8 @@ const RecognitionsReceived = () => {
   console.log('Recognition state:', { 
     receivedCount: receivedRecognitions?.length || 0,
     sentCount: sentRecognitions?.length || 0,
-    isLoading
+    isLoading,
+    error
   });
   
   if (isLoading) {
@@ -56,6 +59,35 @@ const RecognitionsReceived = () => {
         <Loader2 className="h-4 w-4 animate-spin mr-2" />
         <span>Cargando reconocimientos...</span>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="border-destructive">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-center">
+            <CardTitle>Frutos Emocionales</CardTitle>
+            <Button variant="ghost" size="sm" onClick={handleRefresh} title="Reintentar">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
+          <CardDescription>
+            Hubo un problema al cargar los reconocimientos
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              No se pudieron cargar los reconocimientos. Por favor intenta nuevamente.
+            </AlertDescription>
+          </Alert>
+          <div className="text-xs text-muted-foreground mt-2">
+            Error: {error}
+          </div>
+        </CardContent>
+      </Card>
     );
   }
   

@@ -17,6 +17,7 @@ export const useEmotionalRecognitions = () => {
   const [sentRecognitions, setSentRecognitions] = useState<EmotionalRecognition[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   const { categories, isLoading: isCategoriesLoading, refreshCategories } = useRecognitionCategories();
   
@@ -25,6 +26,7 @@ export const useEmotionalRecognitions = () => {
     
     try {
       setIsLoading(true);
+      setError(null);
       console.log('Fetching recognitions for user:', user.id);
       
       // Fetch received recognitions
@@ -38,6 +40,7 @@ export const useEmotionalRecognitions = () => {
       
     } catch (error: any) {
       console.error('Error fetching recognitions:', error);
+      setError(error?.message || 'Error desconocido');
       toast({
         title: 'Error',
         description: 'No se pudieron cargar los reconocimientos',
@@ -91,6 +94,7 @@ export const useEmotionalRecognitions = () => {
     unreadCount,
     isLoading,
     isCategoriesLoading,
+    error,
     sendRecognition,
     markAsRead,
     refreshRecognitions: fetchRecognitions,
