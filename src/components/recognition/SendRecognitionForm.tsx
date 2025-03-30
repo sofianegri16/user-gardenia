@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,10 +19,21 @@ const SendRecognitionForm = () => {
   const { teamMembers, isLoading: isLoadingMembers, refreshTeamMembers } = useTeamMembers();
   const { sendRecognition, categories, isCategoriesLoading } = useEmotionalRecognitions();
   
+  // Refrescar la lista de miembros del equipo cuando se abre el dialog
+  useEffect(() => {
+    if (open) {
+      refreshTeamMembers();
+    }
+  }, [open, refreshTeamMembers]);
+  
   const handleOpenChange = (open: boolean) => {
     setOpen(open);
     if (open) {
-      refreshTeamMembers();
+      // Limpiar el formulario cuando se abre
+      setReceiverId('');
+      setMessage('');
+      setCategoryId('');
+      // El refresh se maneja en el useEffect
     }
   };
 
