@@ -24,12 +24,12 @@ export async function askGemini(prompt: string, emotionalData?: any): Promise<st
       return `Error: ${error.message || 'Hubo un problema conectando con el asistente IA'}`;
     }
 
-    if (!data || typeof data.response !== 'string') {
+    if (!data || typeof data.answer !== 'string') {
       console.error('Invalid response format from ask-gemini:', data);
       return 'Error: Formato de respuesta inválido desde el asistente IA';
     }
 
-    return data.response;
+    return data.answer;
   } catch (error: any) {
     console.error('Error in askGemini function:', {
       message: error.message || 'Unknown error',
