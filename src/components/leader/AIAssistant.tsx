@@ -30,14 +30,14 @@ const AIAssistant = () => {
       setIsLoading(true);
       setResponse('');
       
-      // Preparar datos del equipo para contexto
+      // Preparar datos del equipo para contexto utilizando las propiedades correctas
       const teamStateData = teamData.length > 0 ? {
-        energy_avg: teamData.reduce((acc, data) => acc + (data.energy_level || 0), 0) / teamData.length,
-        pressure_avg: teamData.reduce((acc, data) => acc + (data.pressure_level || 0), 0) / teamData.length,
-        climate_trend: teamData.some(d => d.mood === 'positive') ? 'positiva' : 'neutral',
+        energy_avg: teamData.reduce((acc, data) => acc + (data.avg_energy || 0), 0) / teamData.length,
+        pressure_avg: teamData.reduce((acc, data) => acc + (data.avg_mental_pressure || 0), 0) / teamData.length,
+        climate_trend: teamData.some(d => (d.avg_energy > d.avg_mental_pressure)) ? 'positiva' : 'neutral',
         recent_alerts: teamData
-          .filter(d => d.concerns && d.concerns.length > 0)
-          .flatMap(d => d.concerns || [])
+          .filter(d => d.avg_personal_concerns && d.avg_personal_concerns > 5)
+          .map(d => `altos niveles de preocupación personal (${d.avg_personal_concerns}/10)`)
       } : null;
       
       console.log('Sending prompt to Gemini:', prompt);
