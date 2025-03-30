@@ -87,7 +87,7 @@ export const useEmotionalRecognitions = () => {
   return {
     receivedRecognitions,
     sentRecognitions,
-    categories,
+    categories: Array.isArray(categories) ? categories : [],
     unreadCount,
     isLoading,
     isCategoriesLoading,

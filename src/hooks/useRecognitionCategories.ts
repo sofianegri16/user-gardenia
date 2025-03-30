@@ -11,7 +11,7 @@ export const useRecognitionCategories = () => {
     try {
       setIsLoading(true);
       const data = await fetchRecognitionCategories();
-      setCategories(data);
+      setCategories(data || []);
     } finally {
       setIsLoading(false);
     }

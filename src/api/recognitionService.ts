@@ -15,7 +15,7 @@ export const fetchRecognitionCategories = async (): Promise<RecognitionCategory[
     if (error) throw error;
     
     console.log('Categories fetched:', data);
-    return data as RecognitionCategory[];
+    return Array.isArray(data) ? data as RecognitionCategory[] : [];
   } catch (error: any) {
     console.error('Error fetching recognition categories:', error);
     toast({
