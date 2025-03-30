@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { AppleIcon, Loader2, Users } from 'lucide-react';
+import { AppleIcon, Loader2, Users, RefreshCw } from 'lucide-react';
 import { useTeamMembers, TeamMember } from '@/hooks/useTeamMembers';
 import { useEmotionalRecognitions } from '@/hooks/useEmotionalRecognitions';
 
@@ -22,6 +22,7 @@ const SendRecognitionForm = () => {
   // Refresh team members list when dialog opens
   useEffect(() => {
     if (open) {
+      console.log('Dialog opened, refreshing team members');
       refreshTeamMembers();
     }
   }, [open, refreshTeamMembers]);
@@ -97,9 +98,24 @@ const SendRecognitionForm = () => {
                   </SelectContent>
                 </Select>
               ) : (
-                <div className="p-2 text-sm text-muted-foreground border border-dashed rounded-md bg-muted/50 flex items-center gap-2 justify-center">
-                  <Users className="h-4 w-4" />
-                  <span>No hay compañeros en tu equipo disponibles para reconocimiento.</span>
+                <div className="flex flex-col gap-2">
+                  <div className="p-2 text-sm text-muted-foreground border border-dashed rounded-md bg-muted/50 flex items-center gap-2 justify-center">
+                    <Users className="h-4 w-4" />
+                    <span>No hay compañeros en tu equipo disponibles para reconocimiento.</span>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-xs flex items-center gap-1"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log('Manual refresh triggered');
+                      refreshTeamMembers();
+                    }}
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    <span>Reintentar carga de equipo</span>
+                  </Button>
                 </div>
               )}
             </div>

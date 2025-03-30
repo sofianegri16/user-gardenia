@@ -26,7 +26,7 @@ export const useTeamMembers = () => {
       
       console.log('Fetching team for user:', user.id);
       
-      // First, get the user's team_id - using maybeSingle() to avoid errors with multiple teams
+      // STEP 1: Get the user's team_id
       const { data: userTeams, error: teamError } = await supabase
         .from('team_members')
         .select('team_id')
@@ -44,9 +44,9 @@ export const useTeamMembers = () => {
         return;
       }
       
-      // Use the first team_id found (in case user is in multiple teams)
+      // Log STEP 1 result - show team_id obtained
       const teamId = userTeams[0].team_id;
-      console.log('User belongs to team:', teamId);
+      console.log('DEBUGGING STEP 1: User belongs to team:', teamId);
       
       if (!teamId) {
         console.log('Team ID is undefined');
@@ -55,7 +55,7 @@ export const useTeamMembers = () => {
         return;
       }
       
-      // Then, get all team members except current user
+      // STEP 2: Get all team members except current user
       const { data: teamMemberIds, error: membersError } = await supabase
         .from('team_members')
         .select('user_id')
@@ -74,11 +74,11 @@ export const useTeamMembers = () => {
         return;
       }
       
-      // Extract user_ids from team_members
+      // Log STEP 2 result - show all user_ids found
       const memberIds = teamMemberIds.map(m => m.user_id);
-      console.log('Team member ids:', memberIds);
+      console.log('DEBUGGING STEP 2: Team member ids:', memberIds);
       
-      // Finally, get the profiles of all team members
+      // STEP 3: Get the profiles of all team members
       const { data: profiles, error: profilesError } = await supabase
         .from('user_profiles')
         .select('id, name, role')
@@ -89,7 +89,8 @@ export const useTeamMembers = () => {
         throw profilesError;
       }
       
-      console.log('Team member profiles:', profiles);
+      // Log STEP 3 result - show complete profiles retrieved
+      console.log('DEBUGGING STEP 3: Team member profiles:', profiles);
       
       if (!profiles || profiles.length === 0) {
         console.log('No team member profiles found');
@@ -101,15 +102,15 @@ export const useTeamMembers = () => {
           role: profile.role || 'user'
         }));
         
-        console.log('Formatted team members:', formattedMembers);
+        console.log('DEBUGGING FINAL: Formatted team members:', formattedMembers);
         setTeamMembers(formattedMembers);
       }
       
     } catch (error: any) {
       console.error('Error fetching team members:', error);
       toast({
-        title: 'Error',
-        description: 'No se pudieron cargar los miembros del equipo',
+        title: 'Error al cargar el equipo',
+        description: 'No se pudieron cargar los miembros del equipo. Por favor, intenta de nuevo más tarde.',
         variant: 'destructive',
       });
       setTeamMembers([]);
