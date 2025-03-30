@@ -17,8 +17,7 @@ export const useEmotionalRecognitions = () => {
     try {
       setIsLoading(true);
       
-      // Use the type-unsafe version of the Supabase client to query the new table
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('emotional_recognitions')
         .select(`
           id,
@@ -28,7 +27,7 @@ export const useEmotionalRecognitions = () => {
           created_at,
           is_read,
           recognition_date,
-          sender:user_profiles!sender_id(id, name)
+          sender:sender_id(id, name)
         `)
         .eq('receiver_id', user.id)
         .order('created_at', { ascending: false });
@@ -65,8 +64,7 @@ export const useEmotionalRecognitions = () => {
     if (!user) return false;
     
     try {
-      // Use the type-unsafe version of the Supabase client to insert into the new table
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('emotional_recognitions')
         .insert({
           sender_id: user.id,
@@ -110,8 +108,7 @@ export const useEmotionalRecognitions = () => {
     if (!user) return false;
     
     try {
-      // Use the type-unsafe version of the Supabase client to update the new table
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('emotional_recognitions')
         .update({ is_read: true })
         .eq('id', recognitionId)

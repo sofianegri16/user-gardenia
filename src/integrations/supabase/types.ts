@@ -37,7 +37,22 @@ export type Database = {
           recognition_date?: string
           sender_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_receiver_profile"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_sender_profile"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       garden_checkins: {
         Row: {
@@ -105,6 +120,30 @@ export type Database = {
           fecha?: string | null
           id?: string
           uuid?: string
+        }
+        Relationships: []
+      }
+      recognitions: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          receiver_id?: string
+          sender_id?: string
         }
         Relationships: []
       }
