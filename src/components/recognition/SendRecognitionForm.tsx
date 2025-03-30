@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -16,9 +15,16 @@ const SendRecognitionForm = () => {
   const [categoryId, setCategoryId] = useState<string>('');
   const [isSending, setIsSending] = useState(false);
   
-  const { teamMembers, isLoading: isLoadingMembers } = useTeamMembers();
+  const { teamMembers, isLoading: isLoadingMembers, refreshTeamMembers } = useTeamMembers();
   const { sendRecognition, categories, isCategoriesLoading } = useEmotionalRecognitions();
   
+  const handleOpenChange = (open: boolean) => {
+    setOpen(open);
+    if (open) {
+      refreshTeamMembers();
+    }
+  };
+
   const handleSendRecognition = async () => {
     if (!receiverId || !message || !categoryId) return;
     
@@ -38,7 +44,7 @@ const SendRecognitionForm = () => {
   };
   
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button 
           variant="default"
@@ -68,13 +74,13 @@ const SendRecognitionForm = () => {
                 </div>
               ) : teamMembers.length > 0 ? (
                 <Select value={receiverId} onValueChange={setReceiverId}>
-                  <SelectTrigger id="recipient">
+                  <SelectTrigger id="recipient" className="bg-background">
                     <SelectValue placeholder="Selecciona una persona" />
                   </SelectTrigger>
                   <SelectContent>
                     {teamMembers.map((member: TeamMember) => (
                       <SelectItem key={member.id} value={member.id}>
-                        {member.name || 'Usuario'} {member.role === 'leader' ? '(Líder)' : ''}
+                        {member.name || 'Usuario sin nombre'} {member.role === 'leader' ? '(Líder)' : ''}
                       </SelectItem>
                     ))}
                   </SelectContent>
