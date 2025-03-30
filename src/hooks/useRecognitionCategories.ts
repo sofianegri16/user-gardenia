@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { RecognitionCategory } from '@/types/leader';
-import { fetchRecognitionCategories } from '@/api/recognitionService';
+import { fetchRecognitionCategories } from '@/api/recognition';
 
 export const useRecognitionCategories = () => {
   const [categories, setCategories] = useState<RecognitionCategory[]>([]);

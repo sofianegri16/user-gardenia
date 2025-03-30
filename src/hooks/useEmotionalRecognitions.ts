@@ -9,7 +9,7 @@ import {
   fetchSentRecognitions, 
   sendNewRecognition,
   markRecognitionAsRead
-} from '@/api/recognitionService';
+} from '@/api/recognition';
 
 export const useEmotionalRecognitions = () => {
   const { user } = useAuth();
