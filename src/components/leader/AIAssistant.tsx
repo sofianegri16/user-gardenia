@@ -1,267 +1,104 @@
 
 import React, { useState } from 'react';
-import { Send, Bot, WifiOff, AlertTriangle, TimerReset, RefreshCw } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { askGemini, prepareTeamStateForGemini, AskGeminiResponse, AskGeminiError } from '@/lib/askGemini';
-import { useTeamData } from '@/hooks/useTeamData';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Send, Bot, Loader2 } from 'lucide-react';
+import { askGemini } from '@/lib/askGemini';
 import { toast } from '@/hooks/use-toast';
-import { AlertCircle } from 'lucide-react';
-
-interface AIMessage {
-  question: string;
-  answer: string;
-  timestamp: Date;
-}
+import { useTeamData } from '@/hooks/useTeamData';
 
 const AIAssistant = () => {
-  const [question, setQuestion] = useState('');
-  const [messages, setMessages] = useState<AIMessage[]>([]);
+  const [prompt, setPrompt] = useState('');
+  const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [errorState, setErrorState] = useState<{
-    hasError: boolean;
-    message: string;
-    type: string;
-    detail?: string;
-  }>({
-    hasError: false,
-    message: '',
-    type: '',
-    detail: '',
-  });
-  const { teamData, isLoading: isTeamDataLoading } = useTeamData();
-
-  const clearError = () => {
-    setErrorState({
-      hasError: false,
-      message: '',
-      type: '',
-      detail: '',
-    });
-  };
-
+  const { teamData } = useTeamData();
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Clear any previous errors
-    clearError();
+    if (!prompt.trim()) return;
     
-    if (!question.trim()) {
-      toast({
-        title: "Consulta vacía",
-        description: "Por favor, escribe una pregunta para el asistente",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!teamData || teamData.length === 0) {
-      toast({
-        title: "Datos no disponibles",
-        description: "No hay datos del equipo para proporcionar contexto al asistente",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       setIsLoading(true);
-      // Prepare team state for AI from the most recent data
-      const teamState = prepareTeamStateForGemini(teamData[0]);
+      setResponse('');
       
-      // Call the askGemini function - replace askAI with askGemini
-      const response: AskGeminiResponse = await askGemini({
-        user_role: "Líder",
-        team_state: teamState,
-        question: question.trim(),
-      });
-
-      // Add the new message to the history
-      setMessages(prev => [
-        {
-          question: question.trim(),
-          answer: response.answer,
-          timestamp: new Date(),
-        },
-        ...prev
-      ]);
+      // Pass team emotional data for context if available
+      const aiResponse = await askGemini(prompt, teamData);
       
-      // Clear the input
-      setQuestion('');
-    } catch (error) {
+      // Make sure we're handling the response correctly
+      if (typeof aiResponse === 'string') {
+        setResponse(aiResponse);
+      } else {
+        // Handle unexpected response type
+        console.error('Unexpected response type:', aiResponse);
+        setResponse('Error: Respuesta inesperada del asistente.');
+      }
+      
+    } catch (error: any) {
       console.error('Error communicating with AI Assistant:', error);
-      
-      // Set the error state for UI display
-      setErrorState({
-        hasError: true,
-        message: error.message || "No se pudo obtener una respuesta del asistente. Por favor intenta de nuevo.",
-        type: error.type || "unknown",
-        detail: error.detail || "",
-      });
-      
       toast({
-        title: "Error del Asistente",
-        description: error.message || "No se pudo obtener una respuesta del asistente. Por favor intenta de nuevo.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'No se pudo conectar con el asistente IA. Por favor, inténtalo de nuevo más tarde.',
+        variant: 'destructive',
       });
+      setResponse('Error: No se pudo conectar con el asistente IA.');
     } finally {
       setIsLoading(false);
     }
   };
-
-  const renderErrorState = () => {
-    if (!errorState.hasError) return null;
-    
-    let icon = <AlertCircle className="h-12 w-12 text-destructive/70" />;
-    let title = "Error del Asistente";
-    
-    if (errorState.type === 'quota') {
-      icon = <TimerReset className="h-12 w-12 text-destructive/70" />;
-      title = "Servicio No Disponible";
-    } else if (errorState.type === 'connection') {
-      icon = <WifiOff className="h-12 w-12 text-destructive/70" />;
-      title = "Error de Conexión";
-    } else if (errorState.type === 'auth') {
-      icon = <AlertTriangle className="h-12 w-12 text-destructive/70" />;
-      title = "Error de Autenticación";
-    }
-    
-    return (
-      <div className="flex flex-col items-center justify-center p-4 text-center space-y-2">
-        {icon}
-        <h3 className="font-medium text-destructive">{title}</h3>
-        <p className="text-sm text-muted-foreground">{errorState.message}</p>
-        {errorState.detail && (
-          <p className="text-xs text-muted-foreground/70 max-w-md overflow-hidden text-ellipsis">
-            Detalles: {errorState.detail}
-          </p>
-        )}
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={clearError}
-          className="mt-2 gap-2"
-        >
-          <RefreshCw className="h-3 w-3" />
-          Reintentar
-        </Button>
-      </div>
-    );
-  };
-
-  // Helper function to render the main chat area
-  const renderChatContent = () => {
-    if (errorState.hasError) {
-      return renderErrorState();
-    }
-    
-    if (messages.length === 0) {
-      return (
-        <div className="text-center text-muted-foreground p-4">
-          <Bot className="mx-auto h-12 w-12 text-muted-foreground/60 mb-2" />
-          <p>Pregunta cualquier cosa sobre tu equipo</p>
-        </div>
-      );
-    }
-    
-    return messages.map((message, index) => (
-      <div key={index} className="space-y-2">
-        <div className="bg-muted/50 p-3 rounded-lg">
-          <p className="text-sm font-medium">Tú: {message.question}</p>
-        </div>
-        <div className="bg-primary/10 p-3 rounded-lg">
-          <p className="text-sm">{message.answer}</p>
-        </div>
-      </div>
-    ));
-  };
-
+  
   return (
-    <>
-      {/* Mobile Version - Sheet/Drawer */}
-      <div className="md:hidden fixed bottom-6 right-6 z-10">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button className="rounded-full h-14 w-14 shadow-lg" variant="default">
-              <Bot size={24} />
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="flex flex-col h-[80vh]">
-            <SheetHeader>
-              <SheetTitle>Asistente Virtual</SheetTitle>
-            </SheetHeader>
-            <div className="flex-1 overflow-y-auto mb-4 space-y-4">
-              {renderChatContent()}
-            </div>
-            <form onSubmit={handleSubmit} className="sticky bottom-0 bg-background pt-2">
-              <div className="flex items-center space-x-2">
-                <Textarea 
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="¿Cómo puedo ayudar a mi equipo?"
-                  className="min-h-[60px] resize-none"
-                  disabled={isLoading || isTeamDataLoading || errorState.hasError}
-                />
-                <Button 
-                  type="submit" 
-                  size="icon"
-                  disabled={isLoading || isTeamDataLoading || errorState.hasError}
-                  className="shrink-0"
-                >
-                  {isLoading ? (
-                    <div className="animate-spin h-4 w-4 border-2 border-t-transparent rounded-full" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </form>
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      {/* Desktop Version - Card */}
-      <Card className="hidden md:block">
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Bot className="mr-2 h-5 w-5" />
-            Asistente Virtual
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[350px] flex flex-col">
-            <div className="flex-1 overflow-y-auto mb-4 space-y-4">
-              {renderChatContent()}
-            </div>
-            <form onSubmit={handleSubmit} className="sticky bottom-0 bg-background pt-2">
-              <div className="flex items-center space-x-2">
-                <Textarea 
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="¿Cómo puedo ayudar a mi equipo?"
-                  className="min-h-[60px] resize-none"
-                  disabled={isLoading || isTeamDataLoading || errorState.hasError}
-                />
-                <Button 
-                  type="submit" 
-                  size="icon"
-                  disabled={isLoading || isTeamDataLoading || errorState.hasError}
-                  className="shrink-0"
-                >
-                  {isLoading ? (
-                    <div className="animate-spin h-4 w-4 border-2 border-t-transparent rounded-full" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </form>
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Bot className="h-5 w-5 text-garden-primary" />
+          Asistente IA
+        </CardTitle>
+        <CardDescription>
+          Consulta información sobre tu equipo y recibe recomendaciones
+        </CardDescription>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        {response && (
+          <div className="rounded-lg bg-muted p-4 text-sm">
+            <p className="whitespace-pre-line">{response}</p>
           </div>
-        </CardContent>
-      </Card>
-    </>
+        )}
+        
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <Textarea 
+            placeholder="Pregunta algo sobre tu equipo..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            className="min-h-[100px] resize-none"
+            disabled={isLoading}
+          />
+        </form>
+      </CardContent>
+      
+      <CardFooter>
+        <Button 
+          onClick={handleSubmit}
+          disabled={!prompt.trim() || isLoading}
+          className="ml-auto flex items-center gap-2"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Procesando...
+            </>
+          ) : (
+            <>
+              <Send className="h-4 w-4" />
+              Enviar
+            </>
+          )}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 
