@@ -141,6 +141,7 @@ serve(async (req) => {
       }
       
       const data = await response.json();
+      console.log('Gemini API response:', JSON.stringify(data));
       
       // Extract the answer from Gemini response using the correct response structure
       const answer = data.candidates && 
@@ -162,12 +163,15 @@ serve(async (req) => {
         );
       }
       
-      console.log('Response successfully generated');
+      console.log('Response successfully generated:', answer);
       
-      // Return the answer
+      // Return the answer with explicit status and headers
       return new Response(
         JSON.stringify({ answer }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
       );
     } catch (geminiError) {
       console.error('Error calling Gemini:', geminiError);

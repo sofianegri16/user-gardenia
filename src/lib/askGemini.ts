@@ -38,11 +38,16 @@ export async function askGemini(prompt: string, emotionalData?: any): Promise<st
       return `Error: ${error.message || 'Hubo un problema conectando con el asistente IA'}`;
     }
 
-    if (!data || typeof data.answer !== 'string') {
+    if (!data) {
+      console.error('No data received from ask-gemini');
+      return 'Error: No se recibió respuesta del asistente IA';
+    }
+
+    if (typeof data.answer !== 'string') {
       console.error('Invalid response format from ask-gemini:', data);
       
       // Si hay un mensaje de error detallado en la respuesta, mostrarlo
-      if (data && data.error) {
+      if (data.error) {
         return `Error: ${data.error}`;
       }
       
