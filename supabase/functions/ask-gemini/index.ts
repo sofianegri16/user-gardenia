@@ -23,7 +23,6 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: 'Unauthorized: No Authorization header',
-          errorType: 'auth'
         }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -47,17 +46,16 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: 'Unauthorized: Invalid user',
-          errorType: 'auth'
         }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Get the request body
-    const { user_role, team_state, question } = await req.json();
+    const { team_state, question } = await req.json();
     
     // Log the incoming request for debugging
-    console.log('Request received:', { user_role, team_state, question });
+    console.log('Request received:', { team_state, question });
     console.log('User ID:', user.id);
     
     // Validate request
@@ -66,7 +64,6 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: 'Missing required fields',
-          errorType: 'validation'
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -79,7 +76,6 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: 'Gemini API key is not configured',
-          errorType: 'configuration_error'
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -102,7 +98,10 @@ serve(async (req) => {
     const startTime = Date.now();
     
     try {
-      // Call Gemini API with the correct endpoint (v1beta) and format
+      console.log('Sending request to Gemini API with prompt:', systemPrompt);
+      console.log('Using endpoint: https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent');
+      
+      // Call Gemini API with the CORRECT endpoint format and request structure
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
         method: 'POST',
         headers: {
@@ -125,45 +124,39 @@ serve(async (req) => {
 
       const responseTime = Date.now() - startTime;
       console.log(`Gemini response time: ${responseTime}ms`);
+      console.log(`Gemini response status: ${response.status}`);
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Gemini API error:', errorData);
+        console.error('Gemini API error response:', errorData);
         
         return new Response(
           JSON.stringify({ 
             error: `Error al llamar a la API de Gemini: ${errorData.error?.message || 'Error desconocido'}`,
-            errorDetail: JSON.stringify(errorData),
-            errorType: 'gemini_api_error'
+            details: JSON.stringify(errorData),
           }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
       const data = await response.json();
-      console.log('Gemini API response:', JSON.stringify(data));
+      console.log('Gemini API full response:', JSON.stringify(data));
       
-      // Extract the answer from Gemini response using the correct response structure
-      const answer = data.candidates && 
-                     data.candidates[0] && 
-                     data.candidates[0].content && 
-                     data.candidates[0].content.parts && 
-                     data.candidates[0].content.parts[0] && 
-                     data.candidates[0].content.parts[0].text;
+      // Extract the answer from Gemini response using the correct v1beta response structure
+      const answer = data.candidates?.[0]?.content?.parts?.[0]?.text;
       
       if (!answer) {
-        console.error('Invalid response from Gemini:', data);
+        console.error('Invalid or empty response from Gemini:', data);
         return new Response(
           JSON.stringify({ 
-            error: 'Respuesta inválida de Gemini',
-            errorDetail: JSON.stringify(data),
-            errorType: 'invalid_response'
+            error: 'Respuesta vacía o inválida de Gemini',
+            details: JSON.stringify(data),
           }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
-      console.log('Response successfully generated:', answer);
+      console.log('Valid response successfully generated:', answer);
       
       // Return the answer with explicit status and headers
       return new Response(
@@ -174,12 +167,11 @@ serve(async (req) => {
         }
       );
     } catch (geminiError) {
-      console.error('Error calling Gemini:', geminiError);
+      console.error('Error calling Gemini API:', geminiError);
       return new Response(
         JSON.stringify({ 
           error: 'Error al comunicarse con el servicio de IA de Gemini', 
-          errorDetail: geminiError.message,
-          errorType: 'api_call_error'
+          details: geminiError.message,
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -191,7 +183,6 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message || 'Ha ocurrido un error inesperado',
-        errorType: 'unknown_error'
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
