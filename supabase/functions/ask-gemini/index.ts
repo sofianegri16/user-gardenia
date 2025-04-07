@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // CORS headers
@@ -14,7 +15,7 @@ serve(async (req) => {
   try {
     const { team_state, question } = await req.json();
 
-    const geminiApiKey = "AIzaSyBCkzEJ1w8TjKK_CvYntiAA7WXesNv9BqU"; // tu clave directa
+    const geminiApiKey = "AIzaSyBCkzEJ1w8TjKK_CvYntiAA7WXesNv9BqU"; // tu clave real
 
     const systemPrompt = `Sos un asistente experto en bienestar emocional en entornos laborales.
 Tu tarea es analizar brevemente el estado emocional de un equipo y brindarle al líder 2 o 3 sugerencias empáticas, claras y aplicables hoy mismo.
@@ -33,11 +34,12 @@ Cerrá siempre con una frase amable como:
 "Tu acompañamiento hace la diferencia. Escuchar con empatía es el mejor comienzo."`;
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${geminiApiKey}`
         },
         body: JSON.stringify({
           contents: [
