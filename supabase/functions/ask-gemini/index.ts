@@ -54,11 +54,9 @@ serve(async (req) => {
     // Get the request body
     const { team_state, question } = await req.json();
     
-    // Log the incoming request for debugging
     console.log('Request received:', { team_state, question });
     console.log('User ID:', user.id);
     
-    // Validate request
     if (!question) {
       console.error('Missing required question field');
       return new Response(
@@ -68,8 +66,7 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
-    // Get Gemini API key from environment
+
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     if (!geminiApiKey) {
       console.error('Gemini API key is not configured');
@@ -81,27 +78,28 @@ serve(async (req) => {
       );
     }
 
-    // Prepare context for Gemini
-    const systemPrompt = `Eres un asistente especializado para líderes de equipos que monitorean el bienestar emocional de sus equipos.
-    Debes ser empático, humano y ofrecer consejos prácticos basados en el contexto del equipo.
-    Tu tono debe ser cálido pero profesional.
-    Tus respuestas deben ser concisas (máximo 3-4 oraciones) y directas al punto, enfocándote en soluciones prácticas.
-    
-    Contexto del equipo:
-    - Nivel de energía promedio: ${team_state?.energy_avg || 'No disponible'}
-    - Nivel de presión mental promedio: ${team_state?.pressure_avg || 'No disponible'}
-    - Tendencia del clima emocional: ${team_state?.climate_trend || 'No disponible'}
-    - Alertas recientes: ${team_state?.recent_alerts ? team_state.recent_alerts.join(', ') : 'Ninguna'}
-    
-    ${question}`;
+    const systemPrompt = `Sos un asistente experto en bienestar emocional en entornos laborales.
+Tu tarea es analizar brevemente el estado emocional de un equipo y brindarle al líder 2 o 3 sugerencias empáticas, claras y aplicables hoy mismo.
+
+Tu tono debe ser humano, cálido y profesional. No uses lenguaje técnico. Sé directo/a, amable y útil.
+
+Información del equipo:
+- Nivel de energía: ${team_state?.energy_avg || 'No disponible'}
+- Presión mental: ${team_state?.pressure_avg || 'No disponible'}
+- Clima emocional: ${team_state?.climate_trend || 'No disponible'}
+- Alertas recientes: ${team_state?.recent_alerts ? team_state.recent_alerts.join(', ') : 'Ninguna'}
+
+Pregunta del líder: ${question}
+
+Cerrá siempre con una frase amable como:  
+"Tu acompañamiento hace la diferencia. Escuchar con empatía es el mejor comienzo."`;
 
     const startTime = Date.now();
-    
+
     try {
       console.log('Sending request to Gemini API with prompt:', systemPrompt);
-      console.log('Using endpoint: https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent');
+      console.log('Using endpoint: https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent');
       
-      // Call Gemini API with the CORRECT endpoint format and request structure
       const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`, {
         method: 'POST',
         headers: {
@@ -110,6 +108,7 @@ serve(async (req) => {
         body: JSON.stringify({
           contents: [
             {
+              role: "user",
               parts: [
                 { text: systemPrompt }
               ]
@@ -117,7 +116,7 @@ serve(async (req) => {
           ],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 200,
+            maxOutputTokens: 300,
           },
         }),
       });
@@ -138,11 +137,10 @@ serve(async (req) => {
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
+
       const data = await response.json();
       console.log('Gemini API full response:', JSON.stringify(data));
-      
-      // Extract the answer from Gemini response using the correct v1beta response structure
+
       const answer = data.candidates?.[0]?.content?.parts?.[0]?.text;
       
       if (!answer) {
@@ -155,10 +153,9 @@ serve(async (req) => {
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
+
       console.log('Valid response successfully generated:', answer);
-      
-      // Return the answer with explicit status and headers
+
       return new Response(
         JSON.stringify({ answer }),
         { 
@@ -166,6 +163,7 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
+
     } catch (geminiError) {
       console.error('Error calling Gemini API:', geminiError);
       return new Response(
@@ -179,7 +177,6 @@ serve(async (req) => {
     
   } catch (error) {
     console.error('Error in ask-gemini function:', error);
-    
     return new Response(
       JSON.stringify({ 
         error: error.message || 'Ha ocurrido un error inesperado',
@@ -188,3 +185,4 @@ serve(async (req) => {
     );
   }
 });
+
