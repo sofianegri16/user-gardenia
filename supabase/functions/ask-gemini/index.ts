@@ -126,8 +126,21 @@ Cerrá siempre con una frase amable como:
       console.log(`Gemini response status: ${response.status}`);
       
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Gemini API error response:', errorData);
+  const errorData = await response.json();
+  console.error('❌ Gemini API error response:', errorData);
+  console.error('❌ Gemini status:', response.status);
+  console.error('❌ Gemini headers:', JSON.stringify([...response.headers]));
+
+  return new Response(
+    JSON.stringify({ 
+      error: `Error al llamar a la API de Gemini: ${errorData.error?.message || 'Error desconocido'}`,
+      status: response.status,
+      details: errorData,
+    }),
+    { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
         
         return new Response(
           JSON.stringify({ 
