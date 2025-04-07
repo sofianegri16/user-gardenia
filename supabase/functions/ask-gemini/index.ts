@@ -15,7 +15,7 @@ serve(async (req) => {
   try {
     const { team_state, question } = await req.json();
 
-    const geminiApiKey = "AIzaSyBCkzEJ1w8TjKK_CvYntiAA7WXesNv9BqU"; // tu clave real
+    const geminiApiKey = "AIzaSyBCkzEJ1w8TjKK_CvYntiAA7WXesNv9BqU"; // tu API key
 
     const systemPrompt = `Sos un asistente experto en bienestar emocional en entornos laborales.
 Tu tarea es analizar brevemente el estado emocional de un equipo y brindarle al líder 2 o 3 sugerencias empáticas, claras y aplicables hoy mismo.
@@ -68,7 +68,10 @@ Cerrá siempre con una frase amable como:
     }
 
     const data = await response.json();
+    console.log('💬 RESPUESTA COMPLETA DE GEMINI:', JSON.stringify(data, null, 2));
+
     const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "Respuesta vacía de Gemini";
+    console.log('🧠 Texto que vamos a enviar a Lovable:', answer);
 
     return new Response(JSON.stringify({ answer }), {
       status: 200,
@@ -83,4 +86,3 @@ Cerrá siempre con una frase amable como:
     });
   }
 });
-
