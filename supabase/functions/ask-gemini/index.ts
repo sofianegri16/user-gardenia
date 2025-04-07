@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // CORS headers
@@ -73,7 +72,11 @@ Cerrá siempre con una frase amable como:
     const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "Respuesta vacía de Gemini";
     console.log('🧠 Texto que vamos a enviar a Lovable:', answer);
 
-    return new Response(JSON.stringify({ answer }), {
+    return new Response(JSON.stringify({
+      answer,
+      message: answer,
+      text: answer
+    }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
