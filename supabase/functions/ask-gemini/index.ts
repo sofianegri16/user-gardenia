@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -15,7 +16,6 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      console.error('No Authorization header found');
       return new Response(
         JSON.stringify({ error: 'Unauthorized: No Authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -34,7 +34,6 @@ serve(async (req) => {
     } = await supabaseClient.auth.getUser();
 
     if (userError || !user) {
-      console.error('Error getting user:', userError);
       return new Response(
         JSON.stringify({ error: 'Unauthorized: Invalid user' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -118,9 +117,10 @@ Cerrá siempre con una frase amable como:
 
         console.error('❌ Gemini API error response:', fullError);
 
+        // 🔥 Mostrar el error literal en pantalla
         return new Response(
-          JSON.stringify(fullError),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          new TextEncoder().encode(`ERROR desde Gemini:\n\n${JSON.stringify(fullError, null, 2)}`),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'text/plain' } }
         );
       }
 
