@@ -13,7 +13,7 @@ serve(async (req) => {
   try {
     const { team_state, question } = await req.json();
 
-    const geminiApiKey = "AIzaSyBCkzEJ1w8TjKK_CvYntiAA7WXesNv9BqU"; // tu API key
+    const geminiApiKey = "AIzaSyBCkzEJ1w8TjKK_CvYntiAA7WXesNv9BqU";
 
     const systemPrompt = `Sos un asistente experto en bienestar emocional en entornos laborales.
 Tu tarea es analizar brevemente el estado emocional de un equipo y brindarle al líder 2 o 3 sugerencias empáticas, claras y aplicables hoy mismo.
@@ -57,17 +57,19 @@ Cerrá siempre con una frase amable como:
     );
 
     const data = await response.json();
-    const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "Respuesta vacía de Gemini";
+    const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta";
 
-    return new Response(answer, {
+    return new Response(JSON.stringify({ message: answer }), {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    return new Response("Error inesperado: " + (error.message || error), {
+    return new Response(JSON.stringify({ message: "Error inesperado: " + (error.message || error) }), {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
+});
+
 });
