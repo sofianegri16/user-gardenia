@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-// CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -57,33 +56,16 @@ Cerrá siempre con una frase amable como:
       }
     );
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      const errorText = `ERROR desde Gemini:\n\n${JSON.stringify(errorData, null, 2)}`;
-      return new Response(new TextEncoder().encode(errorText), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
-      });
-    }
-
     const data = await response.json();
-    console.log('💬 RESPUESTA COMPLETA DE GEMINI:', JSON.stringify(data, null, 2));
-
     const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "Respuesta vacía de Gemini";
-    console.log('🧠 Texto que vamos a enviar a Lovable:', answer);
 
-    return new Response(JSON.stringify({
-      answer,
-      message: answer,
-      text: answer
-    }), {
+    return new Response(answer, {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
     });
 
   } catch (error) {
-    const fallback = `Error inesperado:\n\n${error.message || error}`;
-    return new Response(new TextEncoder().encode(fallback), {
+    return new Response("Error inesperado: " + (error.message || error), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
     });
