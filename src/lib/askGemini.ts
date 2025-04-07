@@ -1,68 +1,75 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
-/**
- * Invokes Gemini API via Supabase Edge Function
- * @param prompt - The user input to send to Gemini
- * @param emotionalData - Optional emotional data to provide context
- * @returns The AI response as a string
- */
-export async function askGemini(prompt: string, emotionalData?: any): Promise<string> {
-  try {
-    console.log('Calling askGemini with prompt:', prompt);
-    console.log('Emotional data being sent:', emotionalData);
-    
-    if (!prompt || prompt.trim() === '') {
-      console.error('Empty prompt provided to askGemini');
-      return 'Error: Se requiere una pregunta para el asistente';
-    }
-    
-    const { data, error } = await supabase.functions.invoke('ask-gemini', {
-      body: {
-        question: prompt.trim(),
-        team_state: emotionalData || null
-      }
-    });
-
-    console.log('Response received from ask-gemini:', data);
-
-    if (error) {
-      console.error('Error calling ask-gemini function:', error);
-      
-      // Mostrar mensaje más detallado si hay un error específico de Gemini
-      if (error.message && error.message.includes('Gemini')) {
-        return `Error API Gemini: ${error.message}`;
-      }
-      
-      return `Error: ${error.message || 'Hubo un problema conectando con el asistente IA'}`;
-    }
-
-    if (!data) {
-      console.error('No data received from ask-gemini');
-      return 'Error: No se recibió respuesta del asistente IA';
-    }
-
-    if (typeof data.answer !== 'string') {
-      console.error('Invalid response format from ask-gemini:', data);
-      
-      // Si hay un mensaje de error detallado en la respuesta, mostrarlo
-      if (data.error) {
-        return `Error: ${data.error}`;
-      }
-      
-      return 'Error: Formato de respuesta inválido desde el asistente IA';
-    }
-
-    return data.answer;
-  } catch (error: any) {
-    console.error('Error in askGemini function:', {
-      message: error.message || 'Unknown error',
-      type: error.name || 'unknown',
-      detail: error.context || {}
-    });
-    
-    // Return error message as string with more details if available
-    return `Lo siento, no pude procesar tu solicitud en este momento. ${error.message ? `Error: ${error.message}` : 'Por favor, inténtalo de nuevo más tarde.'}`;
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
   }
-}
+
+  try {
+    const { team_state, question } = await req.json();
+
+    const geminiApiKey = "AIzaSyBCkzEJ1w8TjKK_CvYntiAA7WXesNv9BqU";
+
+    const systemPrompt = `Sos un asistente experto en bienestar emocional en entornos laborales.
+Tu tarea es analizar brevemente el estado emocional de un equipo y brindarle al líder 2 o 3 sugerencias empáticas, claras y aplicables hoy mismo.
+
+Tu tono debe ser humano, cálido y profesional. No uses lenguaje técnico. Sé directo/a, amable y útil.
+
+Información del equipo:
+- Nivel de energía: ${team_state?.energy_avg || 'No disponible'}
+- Presión mental: ${team_state?.pressure_avg || 'No disponible'}
+- Clima emocional: ${team_state?.climate_trend || 'No disponible'}
+- Alertas recientes: ${team_state?.recent_alerts?.join(', ') || 'Ninguna'}
+
+Pregunta del líder: ${question}
+
+Cerrá siempre con una frase amable como:  
+"Tu acompañamiento hace la diferencia. Escuchar con empatía es el mejor comienzo."`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${geminiApiKey}`
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { text: systemPrompt }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 300,
+          },
+        }),
+      }
+    );
+
+    const data = await response.json();
+    const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "Respuesta vacía de Gemini";
+
+    return new Response(JSON.stringify({ answer }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error) {
+    return new Response(JSON.stringify({
+      answer: `Error inesperado: ${error.message || error}`
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
